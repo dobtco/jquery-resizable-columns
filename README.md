@@ -3,7 +3,7 @@ jquery-resizable-columns
 
 Resizable table columns for jQuery.
 
-## [Live Demo](http://dobtco.github.io/jquery-resizable-columns)
+**[Live Demo](http://dobtco.github.io/jquery-resizable-columns)**
 
 #### Simple Usage
 
