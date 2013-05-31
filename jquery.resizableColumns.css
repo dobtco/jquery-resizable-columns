@@ -4,7 +4,7 @@
   right: -2px;
   top: 0;
   position: absolute;
-  cursor: e-resize;
+  cursor: ew-resize;
   z-index: 2; }
   .rc-draghandle.dragging {
     width: 2px;
