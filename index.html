@@ -1,0 +1,107 @@
+<!doctype html>
+<head>
+  <title>jQuery Resizable Columns</title>
+  <meta name="description" content="">
+  <link rel="stylesheet" href="libs/bootstrap.css">
+  <link rel="stylesheet" href="jquery.resizableColumns.css">
+  <link rel="stylesheet" href="demo.css">
+</head>
+<body>
+  <a href="https://github.com/dobtco/jquery-resizable-columns">
+    <img class="ribbon" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub">
+  </a>
+
+  <div class="container">
+    <h4>jQuery Resizable Columns Demo</h4>
+
+    <blockquote><em>Grab the columns and drag em! <strong>Bonus: refresh the page.</strong></em></blockquote>
+
+    <table class="table table-bordered" data-resizable-columns-id="demo-table">
+      <thead>
+        <tr>
+          <th width="5%" data-resizable-column-id="#">#</th>
+          <th data-resizable-column-id="first_name">First Name</th>
+          <th data-resizable-column-id="last_name">Last Name</th>
+          <th data-resizable-column-id="username">Username</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>Mark</td>
+          <td>Otto</td>
+          <td>@mdo</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Jacob</td>
+          <td>Thornton</td>
+          <td>@fat</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td colspan="2">Larry the Bird</td>
+          <td>@twitter</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <pre>
+      &lt;script src="libs/jquery.js"&gt;&lt;/script&gt;
+      &lt;script src="libs/jquery-ui.js"&gt;&lt;/script&gt;
+      &lt;script src="libs/store.js"&gt;&lt;/script&gt;
+      &lt;script src="jquery.resizableColumns.js"&gt;&lt;/script&gt;
+
+      &lt;table class="table table-bordered" data-resizable-columns-id="demo-table"&gt;
+        &lt;thead&gt;
+          &lt;tr&gt;
+            &lt;th width="5%" data-resizable-column-id="#"&gt;#&lt;/th&gt;
+            &lt;th data-resizable-column-id="first_name"&gt;First Name&lt;/th&gt;
+            &lt;th data-resizable-column-id="last_name"&gt;Last Name&lt;/th&gt;
+            &lt;th data-resizable-column-id="username"&gt;Username&lt;/th&gt;
+          &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+          ...
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+
+      &lt;script&gt;
+        $(function(){
+          $("table").resizableColumns({
+            store: store
+          });
+        });
+      &lt;/script&gt;
+    </pre>
+
+  </div>
+
+  <script src="libs/jquery.js"></script>
+  <script src="libs/jquery-ui.js"></script>
+  <script src="libs/store.js"></script>
+  <script src="jquery.resizableColumns.js"></script>
+  <script>
+
+    $(function(){
+      $("table").resizableColumns({
+        store: store
+      });
+    });
+
+  </script>
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', '']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</body>
+</html>

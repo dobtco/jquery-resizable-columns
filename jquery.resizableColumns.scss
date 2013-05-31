@@ -1,0 +1,14 @@
+.rc-draghandle {
+  width: 4px;
+  height: 100%;
+  right: -2px;
+  top: 0;
+  position: absolute;
+  cursor: e-resize;
+  z-index: 2;
+
+  &.dragging {
+    width: 2px;
+    background: #666;
+  }
+}
