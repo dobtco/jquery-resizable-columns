@@ -63,3 +63,11 @@ To save column sizes on page reload (or js re-rendering), just pass a function t
   });
 </script>
 ```
+
+#### License
+
+MIT
+
+#### Credits
+
+There's various versions of this plugin floating around the internet, but they're all outdated in one way or another. Thanks to [http://robau.wordpress.com/2011/06/09/unobtrusive-table-column-resize-with-jquery/]() for a great starting point.
