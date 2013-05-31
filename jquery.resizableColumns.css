@@ -1,3 +1,6 @@
+.rc-wrapper {
+  position: relative; }
+
 .rc-draghandle {
   width: 4px;
   height: 100%;

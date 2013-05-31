@@ -50,7 +50,7 @@
         };
         i = 0;
         return $table.find("tr:first th").each(function() {
-          var $dragHandle, columnId, index, initialPos;
+          var $dragHandle, $wrapper, columnId, index, initialPos, origText;
 
           index = i;
           columnId = tableId + "-" + $(this).data('resizable-column-id');
@@ -58,8 +58,20 @@
             position: "relative",
             width: store ? store.get(columnId) : void 0
           });
+          origText = $(this).text();
           $dragHandle = $("<div class='rc-draghandle'></div>");
-          $(this).append($dragHandle);
+          $wrapper = $("<div class='rc-wrapper'></div>");
+          $wrapper.text(origText);
+          $wrapper.css({
+            'padding-left': $(this).css('padding-left'),
+            'padding-right': $(this).css('padding-right')
+          });
+          $(this).css({
+            'padding-left': '0',
+            'padding-right': '0'
+          });
+          $(this).html($wrapper);
+          $wrapper.append($dragHandle);
           initialPos = void 0;
           $dragHandle.draggable({
             axis: "x",

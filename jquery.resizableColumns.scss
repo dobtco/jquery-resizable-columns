@@ -1,10 +1,14 @@
+.rc-wrapper {
+  position: relative;
+}
+
 .rc-draghandle {
   width: 4px;
   height: 100%;
   right: -2px;
   top: 0;
   position: absolute;
-  cursor: e-resize;
+  cursor: ew-resize;
   z-index: 2;
 
   &.dragging {

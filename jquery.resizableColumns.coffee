@@ -46,9 +46,21 @@ $.fn.extend
           position: "relative"
           width: store.get(columnId) if store
 
+        origText = $(@).text()
         $dragHandle = $("<div class='rc-draghandle'></div>")
+        $wrapper = $("<div class='rc-wrapper'></div>")
+        $wrapper.text(origText)
 
-        $(@).append $dragHandle
+        $wrapper.css
+          'padding-left': $(@).css('padding-left')
+          'padding-right': $(@).css('padding-right')
+
+        $(@).css
+          'padding-left': '0'
+          'padding-right': '0'
+
+        $(@).html $wrapper
+        $wrapper.append $dragHandle
 
         initialPos = undefined
 
