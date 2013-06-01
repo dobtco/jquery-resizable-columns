@@ -3,8 +3,8 @@
 
 .rc-handle {
   position: absolute;
-  width: 5px;
-  background-color: black;
-  cursor: e-resize; }
+  width: 7px;
+  cursor: e-resize;
+  margin-left: -3px; }
   .rc-handle:last-child {
     display: none; }

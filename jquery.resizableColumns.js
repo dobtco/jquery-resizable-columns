@@ -12,33 +12,42 @@
         method_or_opts = {};
       }
       makeResizable = function($table) {
-        var $currentGrip, $handleContainer, createHandles, mousedown, mousemove, mouseup, startPosition, startWidth, syncHandle, syncHandleWidths, tableId;
+        var $currentGrip, $handleContainer, $leftColumn, $rightColumn, createHandles, mousedown, mousemove, mouseup, restoreColumnWidths, saveColumnWidths, startPosition, syncHandle, syncHandleWidths, tableId;
 
         tableId = $table.data('resizable-columns-id');
         $handleContainer = void 0;
         startPosition = void 0;
-        startWidth = void 0;
         $currentGrip = void 0;
+        $leftColumn = void 0;
+        $rightColumn = void 0;
         mouseup = function() {
-          console.log('mouseup\'d');
-          return $(document).off('mousemove.rc');
+          $(document).off('mousemove.rc');
+          return saveColumnWidths();
         };
         mousemove = function(e) {
-          var newWidth;
+          var difference, newLeftColumnWidth, newRightColumnWidth;
 
-          console.log($currentGrip);
-          newWidth = startWidth + (e.pageX - startPosition);
-          console.log('nw', newWidth);
-          if (!(newWidth < 1)) {
-            $currentGrip.data('th').width(newWidth);
+          difference = e.pageX - startPosition;
+          newRightColumnWidth = $rightColumn.data('startWidth') - difference;
+          newLeftColumnWidth = $leftColumn.data('startWidth') + difference;
+          if (((parseInt($rightColumn[0].style.width) < $rightColumn.width()) && (newRightColumnWidth < $rightColumn.width())) || ((parseInt($leftColumn[0].style.width) < $leftColumn.width()) && (newLeftColumnWidth < $leftColumn.width()))) {
+            return;
           }
+          $leftColumn.width(newLeftColumnWidth);
+          $rightColumn.width(newRightColumnWidth);
           return syncHandleWidths();
         };
         mousedown = function(e) {
+          var handleIndex;
+
+          e.preventDefault();
           startPosition = e.pageX;
           $currentGrip = $(e.currentTarget);
-          startWidth = $currentGrip.data('th').width();
-          console.log('started drag', e.pageX);
+          $leftColumn = $currentGrip.data('th');
+          $leftColumn.data('startWidth', $leftColumn.width());
+          handleIndex = $handleContainer.find('.rc-handle').index($currentGrip);
+          $rightColumn = $table.find('tr th').eq(handleIndex + 1);
+          $rightColumn.data('startWidth', $rightColumn.width());
           $(document).on('mousemove.rc', mousemove);
           return $(document).one('mouseup', mouseup);
         };
@@ -59,6 +68,26 @@
             return syncHandle($(this));
           });
         };
+        saveColumnWidths = function() {
+          return $table.find('tr th').each(function() {
+            var id;
+
+            id = tableId + '-' + $(this).data('resizable-column-id');
+            if (method_or_opts.store != null) {
+              return store.set(id, $(this).width());
+            }
+          });
+        };
+        restoreColumnWidths = function() {
+          return $table.find('tr th').each(function() {
+            var id, width;
+
+            id = tableId + '-' + $(this).data('resizable-column-id');
+            if ((method_or_opts.store != null) && (width = store.get(id))) {
+              return $(this).width(width);
+            }
+          });
+        };
         syncHandle = function($handle) {
           return $handle.css({
             left: $handle.data('th').outerWidth() + ($handle.data('th').offset().left - $handleContainer.offset().left),
@@ -66,6 +95,7 @@
           });
         };
         createHandles();
+        restoreColumnWidths();
         return syncHandleWidths();
       };
       return $(this).each(function() {

@@ -6,27 +6,39 @@ $.fn.extend
       tableId = $table.data('resizable-columns-id')
       $handleContainer = undefined
       startPosition = undefined
-      startWidth = undefined
       $currentGrip = undefined
+      $leftColumn = undefined
+      $rightColumn = undefined
 
       mouseup = ->
-        console.log 'mouseup\'d'
         $(document).off 'mousemove.rc'
+        saveColumnWidths()
 
       mousemove = (e) ->
-        console.log $currentGrip
-        newWidth = startWidth + (e.pageX - startPosition)
-        console.log 'nw', newWidth
-        unless newWidth < 1
-          $currentGrip.data('th').width(newWidth)
+        difference = (e.pageX - startPosition)
+        newRightColumnWidth = $rightColumn.data('startWidth') - difference
+        newLeftColumnWidth = $leftColumn.data('startWidth') + difference
+
+        return if ( (parseInt($rightColumn[0].style.width) < $rightColumn.width()) &&
+                    (newRightColumnWidth < $rightColumn.width()) ) ||
+                  ( (parseInt($leftColumn[0].style.width) < $leftColumn.width()) &&
+                    (newLeftColumnWidth < $leftColumn.width()) )
+
+        $leftColumn.width(newLeftColumnWidth)
+        $rightColumn.width(newRightColumnWidth)
+
         syncHandleWidths()
-        # console.log e.pageX - startPosition
 
       mousedown = (e) ->
+        e.preventDefault()
+
         startPosition = e.pageX
         $currentGrip = $(e.currentTarget)
-        startWidth = $currentGrip.data('th').width()
-        console.log('started drag', e.pageX)
+        $leftColumn = $currentGrip.data('th')
+        $leftColumn.data('startWidth', $leftColumn.width())
+        handleIndex = $handleContainer.find('.rc-handle').index($currentGrip)
+        $rightColumn = $table.find('tr th').eq(handleIndex + 1)
+        $rightColumn.data('startWidth', $rightColumn.width())
         $(document).on 'mousemove.rc', mousemove
         $(document).one 'mouseup', mouseup
 
@@ -44,12 +56,25 @@ $.fn.extend
         $handleContainer.find('.rc-handle').each ->
           syncHandle $(@)
 
+      saveColumnWidths = ->
+        $table.find('tr th').each ->
+          id = tableId + '-' + $(@).data('resizable-column-id') # + 'v1' for easy flush in development
+          if method_or_opts.store?
+            store.set id, $(@).width()
+
+      restoreColumnWidths = ->
+        $table.find('tr th').each ->
+          id = tableId + '-' + $(@).data('resizable-column-id') # + 'v1' for easy flush in development
+          if method_or_opts.store? && (width = store.get(id))
+            $(@).width(width)
+
       syncHandle = ($handle) ->
         $handle.css
           left: $handle.data('th').outerWidth() + ($handle.data('th').offset().left - $handleContainer.offset().left)
           height: $table.height()
 
       createHandles()
+      restoreColumnWidths()
       syncHandleWidths()
 
     $(@).each ->

@@ -4,9 +4,9 @@
 
 .rc-handle {
   position: absolute;
-  width: 5px;
-  background-color: black;
+  width: 7px;
   cursor: e-resize;
+  margin-left: -3px;
 
   &:last-child {
     display: none;
