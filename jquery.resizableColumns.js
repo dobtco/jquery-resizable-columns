@@ -13,7 +13,7 @@
       }
       store = void 0;
       makeResizable = function($table) {
-        var restoreColumnWidths, saveColumnWidth, tableId;
+        var restoreColumnWidths, saveColumnWidths, tableId;
 
         tableId = $table.data('resizable-columns-id');
         restoreColumnWidths = function() {
@@ -21,19 +21,21 @@
             var columnId;
 
             columnId = tableId + '-' + $(this).data('resizable-column-id');
-            return $(this).width(store.get(columnId));
+            return $(this).css('width', store.get(columnId));
           });
         };
-        saveColumnWidth = function($column) {
-          var columnId;
+        saveColumnWidths = function() {
+          return $table.find('tr th').each(function() {
+            var columnId;
 
-          columnId = tableId + '-' + $column.data('resizable-column-id');
-          return store.set(columnId, $column[0].style.width);
+            columnId = tableId + '-' + $(this).data('resizable-column-id');
+            return store.set(columnId, $(this)[0].style.width);
+          });
         };
         $table.find('tr th').resizable({
           handles: 'e',
           stop: function(event, ui) {
-            return saveColumnWidth($(event.target));
+            return saveColumnWidths();
           }
         });
         return restoreColumnWidths();

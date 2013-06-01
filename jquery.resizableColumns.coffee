@@ -10,16 +10,17 @@ $.fn.extend
       restoreColumnWidths = ->
         $table.find("tr th").each ->
           columnId = tableId + '-' + $(@).data('resizable-column-id')
-          $(@).width store.get(columnId)
+          $(@).css 'width', store.get(columnId)
 
-      saveColumnWidth = ($column) ->
-        columnId = tableId + '-' + $column.data('resizable-column-id')
-        store.set columnId, $column[0].style.width
+      saveColumnWidths = ->
+        $table.find('tr th').each ->
+          columnId = tableId + '-' + $(@).data('resizable-column-id')
+          store.set columnId, $(@)[0].style.width
 
       $table.find('tr th').resizable
         handles: 'e'
         stop: (event, ui) ->
-          saveColumnWidth $(event.target)
+          saveColumnWidths()
 
       restoreColumnWidths()
 
