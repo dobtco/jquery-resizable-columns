@@ -1,18 +1,17 @@
-.rc-wrapper {
+.ui-resizable {
   position: relative;
 }
 
-.rc-draghandle {
-  width: 4px;
-  height: 100%;
-  right: -2px;
-  top: 0;
+.ui-resizable-handle {
   position: absolute;
-  cursor: ew-resize;
-  z-index: 2;
+  font-size: 0.1px;
+  display: block;
+}
 
-  &.dragging {
-    width: 2px;
-    background: #666;
-  }
+.ui-resizable-e {
+  cursor: e-resize;
+  width: 7px;
+  right: -5px;
+  top: 0;
+  height: 100%;
 }

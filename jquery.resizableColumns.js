@@ -13,91 +13,34 @@
       }
       store = void 0;
       makeResizable = function($table) {
-        var i, resetHandles, setColumnWidth, setSizes, tableId;
+        var restoreColumnWidths, saveColumnWidth, tableId;
 
         tableId = $table.data('resizable-columns-id');
-        setColumnWidth = function($thisColumn, newWidth) {
+        restoreColumnWidths = function() {
+          return $table.find("tr th").each(function() {
+            var columnId;
+
+            columnId = tableId + '-' + $(this).data('resizable-column-id');
+            return $(this).width(store.get(columnId));
+          });
+        };
+        saveColumnWidth = function($column) {
           var columnId;
 
-          columnId = tableId + "-" + $thisColumn.data('resizable-column-id');
-          $thisColumn.css({
-            width: newWidth
-          });
-          if (store) {
-            return store.set(columnId, newWidth);
+          columnId = tableId + '-' + $column.data('resizable-column-id');
+          return store.set(columnId, $column[0].style.width);
+        };
+        $table.find('tr th').resizable({
+          handles: 'e',
+          stop: function(event, ui) {
+            return saveColumnWidth($(event.target));
           }
-        };
-        resetHandles = function() {
-          return $(".rc-draghandle").css({
-            left: '',
-            height: ''
-          });
-        };
-        setSizes = function(difference, pos) {
-          var $nextColumn, $thisColumn, couldntResize, currentWidth, newNextColumnWidth, newWidth;
-
-          $thisColumn = $table.find("tr:first th").eq(pos);
-          $nextColumn = $table.find("tr:first th").eq(pos + 1);
-          currentWidth = $thisColumn.width();
-          newWidth = currentWidth + difference;
-          setColumnWidth($thisColumn, newWidth);
-          couldntResize = newWidth - $thisColumn.width();
-          if ($nextColumn.length > 0) {
-            newNextColumnWidth = $nextColumn.width() - couldntResize;
-            setColumnWidth($nextColumn, newNextColumnWidth);
-          }
-          return resetHandles();
-        };
-        i = 0;
-        return $table.find("tr:first th").each(function() {
-          var $dragHandle, $wrapper, columnId, index, initialPos, origText;
-
-          index = i;
-          columnId = tableId + "-" + $(this).data('resizable-column-id');
-          $(this).css({
-            position: "relative",
-            width: store ? store.get(columnId) : void 0
-          });
-          origText = $(this).text();
-          $dragHandle = $("<div class='rc-draghandle'></div>");
-          $wrapper = $("<div class='rc-wrapper'></div>");
-          $wrapper.text(origText);
-          $wrapper.css({
-            'padding-left': $(this).css('padding-left'),
-            'padding-right': $(this).css('padding-right')
-          });
-          $(this).css({
-            'padding-left': '0',
-            'padding-right': '0'
-          });
-          $(this).html($wrapper);
-          $wrapper.append($dragHandle);
-          initialPos = void 0;
-          $dragHandle.draggable({
-            axis: "x",
-            start: function() {
-              initialPos = $(this).offset().left;
-              $(this).addClass('dragging');
-              return $(this).height($table.height());
-            },
-            stop: function(e, ui) {
-              var difference;
-
-              $(this).removeClass('dragging');
-              difference = $(this).offset().left - initialPos;
-              return setSizes(difference, index);
-            }
-          });
-          return i = i + 1;
         });
+        return restoreColumnWidths();
       };
       return $(this).each(function() {
-        if (method_or_opts === 'destroy') {
-          $(this).find(".rc-draghandle").remove();
-          return $(this).find("th").css({
-            position: '',
-            width: ''
-          });
+        if (typeof method_or_opts === 'string') {
+          return $(this).resizable(method_or_opts);
         } else {
           store = method_or_opts.store;
           return makeResizable($(this));
