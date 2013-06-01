@@ -1,22 +1,14 @@
-.ui-resizable {
+.rc-handle-container {
   position: relative;
 }
 
-.ui-resizable-handle {
-  font-size: 0.1px;
-  display: block;
-  float: right;
-  height: 29px;
-  margin: -6px -7px -6px 0;
-  position: relative;
-  width: 7px;
+.rc-handle {
+  position: absolute;
+  width: 5px;
+  background-color: black;
   cursor: e-resize;
-  width: 7px;
-  right: -5px;
-  top: 0;
-}
 
-.inner-th {
-  width: 100%;
+  &:last-child {
+    display: none;
+  }
 }
-

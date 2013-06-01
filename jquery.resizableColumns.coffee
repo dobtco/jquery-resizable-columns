@@ -2,31 +2,56 @@ $ = jQuery
 
 $.fn.extend
   resizableColumns: (method_or_opts = {}) ->
-    store = undefined
-
     makeResizable = ($table) ->
       tableId = $table.data('resizable-columns-id')
+      $handleContainer = undefined
+      startPosition = undefined
+      startWidth = undefined
+      $currentGrip = undefined
 
-      restoreColumnWidths = ->
-        $table.find("tr th").each ->
-          columnId = tableId + '-' + $(@).data('resizable-column-id')
-          $(@).css 'width', store.get(columnId)
+      mouseup = ->
+        console.log 'mouseup\'d'
+        $(document).off 'mousemove.rc'
 
-      saveColumnWidths = ->
+      mousemove = (e) ->
+        console.log $currentGrip
+        $th = $currentGrip.data('th')
+        $th.width(startWidth + (e.pageX - startPosition))
+        syncHandleWidths()
+        console.log e.pageX - startPosition
+
+      mousedown = (e) ->
+        startPosition = e.pageX
+        $currentGrip = $(e.currentTarget)
+        startWidth = $currentGrip.data('th').width()
+        console.log('started drag', e.pageX)
+        $(document).on 'mousemove.rc', mousemove
+        $(document).one 'mouseup', mouseup
+
+      createHandles = ->
+        $table.before ($handleContainer = $("<div class='rc-handle-container' />"))
         $table.find('tr th').each ->
-          columnId = tableId + '-' + $(@).data('resizable-column-id')
-          store.set columnId, $(@)[0].style.width
+          $handle = $("<div class='rc-handle' />")
+          $handle.data('th', $(@))
+          $handle.appendTo($handleContainer)
 
-      $table.find('tr th').resizable
-        handles: 'e'
-        stop: (event, ui) ->
-          saveColumnWidths()
+        $handleContainer.on 'mousedown', '.rc-handle', mousedown
 
-      restoreColumnWidths()
+      syncHandleWidths = ->
+        $handleContainer.width($table.width())
+        $handleContainer.find('.rc-handle').each ->
+          syncHandle $(@)
+
+      syncHandle = ($handle) ->
+        $handle.css
+          left: $handle.data('th').outerWidth() + ($handle.data('th').offset().left - $handleContainer.offset().left)
+          height: $table.height()
+
+      createHandles()
+      syncHandleWidths()
 
     $(@).each ->
       if typeof method_or_opts == 'string'
         $(@).resizable method_or_opts
       else
-        store = method_or_opts.store
         makeResizable $(@)

@@ -6,45 +6,70 @@
 
   $.fn.extend({
     resizableColumns: function(method_or_opts) {
-      var makeResizable, store;
+      var makeResizable;
 
       if (method_or_opts == null) {
         method_or_opts = {};
       }
-      store = void 0;
       makeResizable = function($table) {
-        var restoreColumnWidths, saveColumnWidths, tableId;
+        var $currentGrip, $handleContainer, createHandles, mousedown, mousemove, mouseup, startPosition, startWidth, syncHandle, syncHandleWidths, tableId;
 
         tableId = $table.data('resizable-columns-id');
-        restoreColumnWidths = function() {
-          return $table.find("tr th").each(function() {
-            var columnId;
+        $handleContainer = void 0;
+        startPosition = void 0;
+        startWidth = void 0;
+        $currentGrip = void 0;
+        mouseup = function() {
+          console.log('mouseup\'d');
+          return $(document).off('mousemove.rc');
+        };
+        mousemove = function(e) {
+          var $th;
 
-            columnId = tableId + '-' + $(this).data('resizable-column-id');
-            return $(this).css('width', store.get(columnId));
+          console.log($currentGrip);
+          $th = $currentGrip.data('th');
+          $th.width(startWidth + (e.pageX - startPosition));
+          syncHandleWidths();
+          return console.log(e.pageX - startPosition);
+        };
+        mousedown = function(e) {
+          startPosition = e.pageX;
+          $currentGrip = $(e.currentTarget);
+          startWidth = $currentGrip.data('th').width();
+          console.log('started drag', e.pageX);
+          $(document).on('mousemove.rc', mousemove);
+          return $(document).one('mouseup', mouseup);
+        };
+        createHandles = function() {
+          $table.before(($handleContainer = $("<div class='rc-handle-container' />")));
+          $table.find('tr th').each(function() {
+            var $handle;
+
+            $handle = $("<div class='rc-handle' />");
+            $handle.data('th', $(this));
+            return $handle.appendTo($handleContainer);
+          });
+          return $handleContainer.on('mousedown', '.rc-handle', mousedown);
+        };
+        syncHandleWidths = function() {
+          $handleContainer.width($table.width());
+          return $handleContainer.find('.rc-handle').each(function() {
+            return syncHandle($(this));
           });
         };
-        saveColumnWidths = function() {
-          return $table.find('tr th').each(function() {
-            var columnId;
-
-            columnId = tableId + '-' + $(this).data('resizable-column-id');
-            return store.set(columnId, $(this)[0].style.width);
+        syncHandle = function($handle) {
+          return $handle.css({
+            left: $handle.data('th').outerWidth() + ($handle.data('th').offset().left - $handleContainer.offset().left),
+            height: $table.height()
           });
         };
-        $table.find('tr th').resizable({
-          handles: 'e',
-          stop: function(event, ui) {
-            return saveColumnWidths();
-          }
-        });
-        return restoreColumnWidths();
+        createHandles();
+        return syncHandleWidths();
       };
       return $(this).each(function() {
         if (typeof method_or_opts === 'string') {
           return $(this).resizable(method_or_opts);
         } else {
-          store = method_or_opts.store;
           return makeResizable($(this));
         }
       });

@@ -7,7 +7,6 @@ Resizable table columns for jQuery. **[Live Demo](http://dobtco.github.io/jquery
 
 ```
 <script src="libs/jquery.js"></script>
-<script src="libs/jquery-ui.js"></script>
 <script src="jquery.resizableColumns.js"></script>
 
 <table>
@@ -37,7 +36,6 @@ To save column sizes on page reload (or js re-rendering), just pass a function t
 
 ```
 <script src="libs/jquery.js"></script>
-<script src="libs/jquery-ui.js"></script>
 <script src="libs/store.js"></script>
 <script src="jquery.resizableColumns.js"></script>
 
