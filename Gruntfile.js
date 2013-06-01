@@ -2,11 +2,12 @@ module.exports = function(grunt) {
 
   var path = require('path');
   var exec = require('child_process').exec;
-  var tasks = ['coffee', 'sass'];
+  var tasks = ['coffee', 'sass', 'uglify'];
 
   grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-contrib-sass');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
 
   grunt.initConfig({
 
@@ -25,6 +26,15 @@ module.exports = function(grunt) {
         files: {
           'css/jquery.resizableColumns.css': 'scss/jquery.resizableColumns.scss',
           'css/demo.css': 'scss/demo.scss'
+        }
+      }
+    },
+
+    uglify: {
+      options: {},
+      all: {
+        files: {
+          'dist/jquery.resizableColumns.min.js': 'js/jquery.resizableColumns.js'
         }
       }
     },
