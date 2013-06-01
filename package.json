@@ -1,0 +1,11 @@
+{
+  "name": "jquery-resizable-columns",
+  "version": "0.0.1",
+  "main": "Gruntfile.js",
+  "dependencies": {
+    "grunt": "*",
+    "grunt-contrib-sass": "*",
+    "grunt-contrib-coffee": "*",
+    "grunt-contrib-watch": "*"
+  }
+}
