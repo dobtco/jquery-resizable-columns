@@ -15,10 +15,12 @@ $.fn.extend
 
       mousemove = (e) ->
         console.log $currentGrip
-        $th = $currentGrip.data('th')
-        $th.width(startWidth + (e.pageX - startPosition))
+        newWidth = startWidth + (e.pageX - startPosition)
+        console.log 'nw', newWidth
+        unless newWidth < 1
+          $currentGrip.data('th').width(newWidth)
         syncHandleWidths()
-        console.log e.pageX - startPosition
+        # console.log e.pageX - startPosition
 
       mousedown = (e) ->
         startPosition = e.pageX

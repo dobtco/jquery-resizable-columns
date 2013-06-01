@@ -24,13 +24,15 @@
           return $(document).off('mousemove.rc');
         };
         mousemove = function(e) {
-          var $th;
+          var newWidth;
 
           console.log($currentGrip);
-          $th = $currentGrip.data('th');
-          $th.width(startWidth + (e.pageX - startPosition));
-          syncHandleWidths();
-          return console.log(e.pageX - startPosition);
+          newWidth = startWidth + (e.pageX - startPosition);
+          console.log('nw', newWidth);
+          if (!(newWidth < 1)) {
+            $currentGrip.data('th').width(newWidth);
+          }
+          return syncHandleWidths();
         };
         mousedown = function(e) {
           startPosition = e.pageX;
