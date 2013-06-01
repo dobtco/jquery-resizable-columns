@@ -3,15 +3,19 @@
 }
 
 .ui-resizable-handle {
-  position: absolute;
   font-size: 0.1px;
   display: block;
-}
-
-.ui-resizable-e {
+  float: right;
+  height: 29px;
+  margin: -6px -7px -6px 0;
+  position: relative;
+  width: 7px;
   cursor: e-resize;
   width: 7px;
   right: -5px;
   top: 0;
-  height: 100%;
+}
+
+.inner-th {
+  width: 100%;
 }
