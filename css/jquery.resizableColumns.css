@@ -2,8 +2,6 @@
   position: relative; }
 
 .rc-handle {
-  background: black;
-  opacity: 0.2;
   position: absolute;
   width: 7px;
   cursor: ew-resize;
