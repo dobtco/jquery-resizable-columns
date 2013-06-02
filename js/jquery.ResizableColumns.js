@@ -9,7 +9,7 @@ $.fn.extend({
     if (options == null) {
       options = {};
     }
-    if (typeof method !== 'string') {
+    if (method && typeof method !== 'string') {
       options = method;
     }
     makeResizable = function($table) {

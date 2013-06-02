@@ -2,7 +2,7 @@ $ = jQuery
 
 $.fn.extend
   resizableColumns: (method, options = {}) ->
-    if typeof method != 'string'
+    if method && typeof method != 'string'
       options = method
 
     makeResizable = ($table) ->
