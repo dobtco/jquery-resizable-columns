@@ -1,7 +1,10 @@
 $ = jQuery
 
 $.fn.extend
-  resizableColumns: (method_or_opts = {}) ->
+  resizableColumns: (method, options = {}) ->
+    if typeof method != 'string'
+      options = method
+
     makeResizable = ($table) ->
       tableId = $table.data('resizable-columns-id')
       $handleContainer = undefined
@@ -44,6 +47,7 @@ $.fn.extend
 
       createHandles = ->
         $table.before ($handleContainer = $("<div class='rc-handle-container' />"))
+        $table.data('handleContainer', $handleContainer)
         $table.find('tr th').each ->
           $handle = $("<div class='rc-handle' />")
           $handle.data('th', $(@))
@@ -59,13 +63,13 @@ $.fn.extend
       saveColumnWidths = ->
         $table.find('tr th').each ->
           id = tableId + '-' + $(@).data('resizable-column-id') # + 'v1' for easy flush in development
-          if method_or_opts.store?
+          if options.store?
             store.set id, $(@).width()
 
       restoreColumnWidths = ->
         $table.find('tr th').each ->
           id = tableId + '-' + $(@).data('resizable-column-id') # + 'v1' for easy flush in development
-          if method_or_opts.store? && (width = store.get(id))
+          if options.store? && (width = store.get(id))
             $(@).width(width)
 
       syncHandle = ($handle) ->
@@ -78,7 +82,12 @@ $.fn.extend
       syncHandleWidths()
 
     $(@).each ->
-      if typeof method_or_opts == 'string'
-        $(@).resizable method_or_opts
+      if method == 'destroy'
+        $(@).data('handleContainer').remove()
+        $(@).removeData('handleContainer')
+        $(@).find('tr th').each ->
+          $(@).removeData('th')
+          $(@).width('') if options.resetWidths
+
       else
         makeResizable $(@)

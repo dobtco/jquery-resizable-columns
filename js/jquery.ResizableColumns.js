@@ -3,11 +3,14 @@ var $;
 $ = jQuery;
 
 $.fn.extend({
-  resizableColumns: function(method_or_opts) {
+  resizableColumns: function(method, options) {
     var makeResizable;
 
-    if (method_or_opts == null) {
-      method_or_opts = {};
+    if (options == null) {
+      options = {};
+    }
+    if (typeof method !== 'string') {
+      options = method;
     }
     makeResizable = function($table) {
       var $currentGrip, $handleContainer, $leftColumn, $rightColumn, createHandles, mousedown, mousemove, mouseup, restoreColumnWidths, saveColumnWidths, startPosition, syncHandle, syncHandleWidths, tableId;
@@ -51,6 +54,7 @@ $.fn.extend({
       };
       createHandles = function() {
         $table.before(($handleContainer = $("<div class='rc-handle-container' />")));
+        $table.data('handleContainer', $handleContainer);
         $table.find('tr th').each(function() {
           var $handle;
 
@@ -71,7 +75,7 @@ $.fn.extend({
           var id;
 
           id = tableId + '-' + $(this).data('resizable-column-id');
-          if (method_or_opts.store != null) {
+          if (options.store != null) {
             return store.set(id, $(this).width());
           }
         });
@@ -81,7 +85,7 @@ $.fn.extend({
           var id, width;
 
           id = tableId + '-' + $(this).data('resizable-column-id');
-          if ((method_or_opts.store != null) && (width = store.get(id))) {
+          if ((options.store != null) && (width = store.get(id))) {
             return $(this).width(width);
           }
         });
@@ -97,8 +101,15 @@ $.fn.extend({
       return syncHandleWidths();
     };
     return $(this).each(function() {
-      if (typeof method_or_opts === 'string') {
-        return $(this).resizable(method_or_opts);
+      if (method === 'destroy') {
+        $(this).data('handleContainer').remove();
+        $(this).removeData('handleContainer');
+        return $(this).find('tr th').each(function() {
+          $(this).removeData('th');
+          if (options.resetWidths) {
+            return $(this).width('');
+          }
+        });
       } else {
         return makeResizable($(this));
       }
