@@ -27,9 +27,12 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       var _this = this;
 
       this.$table.before((this.$handleContainer = $("<div class='rc-handle-container' />")));
-      this.$table.find('tr th').each(function(_, el) {
+      this.$table.find('tr th').each(function(i, el) {
         var $handle;
 
+        if (_this.$table.find('tr th').eq(i + 1).length === 0 || (_this.$table.find('tr th').eq(i + 1).attr('data-noresize') != null)) {
+          return;
+        }
         $handle = $("<div class='rc-handle' />");
         $handle.data('th', $(el));
         return $handle.appendTo(_this.$handleContainer);
@@ -76,23 +79,22 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     };
 
     ResizableColumns.prototype.mousedown = function(e) {
-      var $currentGrip, $leftColumn, $rightColumn, handleIndex,
+      var $currentGrip, $leftColumn, $rightColumn, leftColumnStartWidth, rightColumnStartWidth,
         _this = this;
 
       e.preventDefault();
       this.startPosition = e.pageX;
       $currentGrip = $(e.currentTarget);
       $leftColumn = $currentGrip.data('th');
-      $leftColumn.data('startWidth', $leftColumn.width());
-      handleIndex = this.$handleContainer.find('.rc-handle').index($currentGrip);
-      $rightColumn = this.$table.find('tr th').eq(handleIndex + 1);
-      $rightColumn.data('startWidth', $rightColumn.width());
+      leftColumnStartWidth = $leftColumn.width();
+      $rightColumn = this.$table.find('tr th').eq(this.$handleContainer.find('.rc-handle').index($currentGrip) + 1);
+      rightColumnStartWidth = $rightColumn.width();
       $(document).on('mousemove.rc', function(e) {
         var difference, newLeftColumnWidth, newRightColumnWidth;
 
         difference = e.pageX - _this.startPosition;
-        newRightColumnWidth = $rightColumn.data('startWidth') - difference;
-        newLeftColumnWidth = $leftColumn.data('startWidth') + difference;
+        newRightColumnWidth = rightColumnStartWidth - difference;
+        newLeftColumnWidth = leftColumnStartWidth + difference;
         if (((parseInt($rightColumn[0].style.width) < $rightColumn.width()) && (newRightColumnWidth < $rightColumn.width())) || ((parseInt($leftColumn[0].style.width) < $leftColumn.width()) && (newLeftColumnWidth < $leftColumn.width()))) {
           return;
         }

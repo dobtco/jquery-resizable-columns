@@ -21,7 +21,10 @@
 
     createHandles: ->
       @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))
-      @$table.find('tr th').each (_, el) =>
+      @$table.find('tr th').each (i, el) =>
+        return if @$table.find('tr th').eq(i + 1).length == 0 ||
+                  @$table.find('tr th').eq(i + 1).attr('data-noresize')?
+
         $handle = $("<div class='rc-handle' />")
         $handle.data('th', $(el))
         $handle.appendTo(@$handleContainer)
@@ -53,20 +56,32 @@
       @startPosition = e.pageX
       $currentGrip = $(e.currentTarget)
       $leftColumn = $currentGrip.data('th')
-      $leftColumn.data('startWidth', $leftColumn.width())
-      handleIndex = @$handleContainer.find('.rc-handle').index($currentGrip)
-      $rightColumn = @$table.find('tr th').eq(handleIndex + 1)
-      $rightColumn.data('startWidth', $rightColumn.width())
+      leftColumnStartWidth = $leftColumn.width()
+      $rightColumn = @$table.find('tr th').eq(@$handleContainer.find('.rc-handle').index($currentGrip) + 1)
+      rightColumnStartWidth = $rightColumn.width()
 
       $(document).on 'mousemove.rc', (e) =>
         difference = (e.pageX - @startPosition)
-        newRightColumnWidth = $rightColumn.data('startWidth') - difference
-        newLeftColumnWidth = $leftColumn.data('startWidth') + difference
+        newRightColumnWidth = rightColumnStartWidth - difference
+        newLeftColumnWidth = leftColumnStartWidth + difference
 
-        return if ( (parseInt($rightColumn[0].style.width) < $rightColumn.width()) &&
-                    (newRightColumnWidth < $rightColumn.width()) ) ||
-                  ( (parseInt($leftColumn[0].style.width) < $leftColumn.width()) &&
-                    (newLeftColumnWidth < $leftColumn.width()) )
+
+        if ( (parseInt($rightColumn[0].style.width) < $rightColumn.width()) &&
+              (newRightColumnWidth < $rightColumn.width()) ) ||
+            ( (parseInt($leftColumn[0].style.width) < $leftColumn.width()) &&
+              (newLeftColumnWidth < $leftColumn.width()) )
+
+          # console.log '======'
+          # console.log '$rightColumn.width()', $rightColumn.width()
+          # console.log 'parseInt($rightColumn[0].style.width)', parseInt($rightColumn[0].style.width)
+          # console.log 'newRightColumnWidth', newRightColumnWidth
+          # console.log '---'
+          # console.log '$leftColumn.width()', $leftColumn.width()
+          # console.log 'parseInt($leftColumn[0].style.width)', parseInt($leftColumn[0].style.width)
+          # console.log 'newLeftColumnWidth', newLeftColumnWidth
+          # console.log '======'
+
+          return
 
         $leftColumn.width(newLeftColumnWidth)
         $rightColumn.width(newRightColumnWidth)
