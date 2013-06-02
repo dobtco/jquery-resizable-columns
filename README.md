@@ -5,11 +5,11 @@ Resizable table columns for jQuery. **[Live Demo](http://dobtco.github.io/jquery
 
 **New and Improved!** *Now tested and working on Chrome & Firefox (Mac + Windows), and IE 9 + 10. Other browsers might work too, just haven't had time to check.*
 
-**Size:** < 2kb minified
+**Size:** < 3kb minified
 
 #### Dependencies
 - jQuery
-- [store.js](https://github.com/marcuswestin/store.js/) (or anything similar) for localStorage persistence. 
+- [store.js](https://github.com/marcuswestin/store.js/) (or anything similar) for localStorage persistence.
 
 #### Simple Usage
 

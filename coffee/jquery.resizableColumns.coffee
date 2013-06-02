@@ -1,24 +1,61 @@
-$ = jQuery
+(($, window) ->
 
-$.fn.extend
-  resizableColumns: (method, options = {}) ->
-    if method && typeof method != 'string'
-      options = method
+  # Define the plugin class
+  class ResizableColumns
 
-    makeResizable = ($table) ->
-      tableId = $table.data('resizable-columns-id')
-      $handleContainer = undefined
-      startPosition = undefined
-      $currentGrip = undefined
-      $leftColumn = undefined
-      $rightColumn = undefined
+    defaults:
+      store: window.store
 
-      mouseup = ->
-        $(document).off 'mousemove.rc'
-        saveColumnWidths()
+    constructor: ($table, options) ->
+      @options = $.extend({}, @defaults, options)
+      @$table = $table
+      @tableId = @$table.data('resizable-columns-id')
 
-      mousemove = (e) ->
-        difference = (e.pageX - startPosition)
+      @createHandles()
+      @restoreColumnWidths()
+      @syncHandleWidths()
+
+    createHandles: ->
+      @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))
+      @$table.find('tr th').each (_, el) =>
+        $handle = $("<div class='rc-handle' />")
+        $handle.data('th', $(el))
+        $handle.appendTo(@$handleContainer)
+
+      @$handleContainer.on 'mousedown', '.rc-handle', @mousedown
+
+    syncHandleWidths: ->
+      @$handleContainer.width(@$table.width())
+      @$handleContainer.find('.rc-handle').each (_, el) =>
+        $(el).css
+          left: $(el).data('th').outerWidth() + ($(el).data('th').offset().left - @$handleContainer.offset().left)
+          height: @$table.height()
+
+    saveColumnWidths: ->
+      @$table.find('tr th').each (_, el) =>
+        id = @tableId + '-' + $(el).data('resizable-column-id') # + 'v1' for easy flush in development
+        if @options.store?
+          store.set id, $(el).width()
+
+    restoreColumnWidths: ->
+      @$table.find('tr th').each (_, el) =>
+        id = @tableId + '-' + $(el).data('resizable-column-id') # + 'v1' for easy flush in development
+        if @options.store? && (width = store.get(id))
+          $(el).width(width)
+
+    mousedown: (e) =>
+      e.preventDefault()
+
+      @startPosition = e.pageX
+      $currentGrip = $(e.currentTarget)
+      $leftColumn = $currentGrip.data('th')
+      $leftColumn.data('startWidth', $leftColumn.width())
+      handleIndex = @$handleContainer.find('.rc-handle').index($currentGrip)
+      $rightColumn = @$table.find('tr th').eq(handleIndex + 1)
+      $rightColumn.data('startWidth', $rightColumn.width())
+
+      $(document).on 'mousemove.rc', (e) =>
+        difference = (e.pageX - @startPosition)
         newRightColumnWidth = $rightColumn.data('startWidth') - difference
         newLeftColumnWidth = $leftColumn.data('startWidth') + difference
 
@@ -30,65 +67,21 @@ $.fn.extend
         $leftColumn.width(newLeftColumnWidth)
         $rightColumn.width(newRightColumnWidth)
 
-        syncHandleWidths()
+        @syncHandleWidths()
 
-      mousedown = (e) ->
-        e.preventDefault()
+      $(document).one 'mouseup', =>
+        $(document).off 'mousemove.rc'
+        @saveColumnWidths()
 
-        startPosition = e.pageX
-        $currentGrip = $(e.currentTarget)
-        $leftColumn = $currentGrip.data('th')
-        $leftColumn.data('startWidth', $leftColumn.width())
-        handleIndex = $handleContainer.find('.rc-handle').index($currentGrip)
-        $rightColumn = $table.find('tr th').eq(handleIndex + 1)
-        $rightColumn.data('startWidth', $rightColumn.width())
-        $(document).on 'mousemove.rc', mousemove
-        $(document).one 'mouseup', mouseup
+  # Define the plugin
+  $.fn.extend resizableColumns: (option, args...) ->
+    @each ->
+      $table = $(@)
+      data = $table.data('resizableColumns')
 
-      createHandles = ->
-        $table.before ($handleContainer = $("<div class='rc-handle-container' />"))
-        $table.data('handleContainer', $handleContainer)
-        $table.find('tr th').each ->
-          $handle = $("<div class='rc-handle' />")
-          $handle.data('th', $(@))
-          $handle.appendTo($handleContainer)
+      if !data
+        $table.data 'resizableColumns', (data = new ResizableColumns($table, option))
+      if typeof option == 'string'
+        data[option].apply(data, args)
 
-        $handleContainer.on 'mousedown', '.rc-handle', mousedown
-
-      syncHandleWidths = ->
-        $handleContainer.width($table.width())
-        $handleContainer.find('.rc-handle').each ->
-          syncHandle $(@)
-
-      saveColumnWidths = ->
-        $table.find('tr th').each ->
-          id = tableId + '-' + $(@).data('resizable-column-id') # + 'v1' for easy flush in development
-          if options.store?
-            store.set id, $(@).width()
-
-      restoreColumnWidths = ->
-        $table.find('tr th').each ->
-          id = tableId + '-' + $(@).data('resizable-column-id') # + 'v1' for easy flush in development
-          if options.store? && (width = store.get(id))
-            $(@).width(width)
-
-      syncHandle = ($handle) ->
-        $handle.css
-          left: $handle.data('th').outerWidth() + ($handle.data('th').offset().left - $handleContainer.offset().left)
-          height: $table.height()
-
-      createHandles()
-      restoreColumnWidths()
-      syncHandleWidths()
-
-    $(@).each ->
-      if method == 'destroy'
-        return unless $(@).data('handleContainer')
-        $(@).data('handleContainer').remove()
-        $(@).removeData('handleContainer')
-        $(@).find('tr th').each ->
-          $(@).removeData('th')
-          $(@).width('') if options.resetWidths
-
-      else
-        makeResizable $(@)
+) window.jQuery, window

@@ -1,34 +1,91 @@
-var $;
+var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __slice = [].slice;
 
-$ = jQuery;
+(function($, window) {
+  var ResizableColumns;
 
-$.fn.extend({
-  resizableColumns: function(method, options) {
-    var makeResizable;
+  ResizableColumns = (function() {
+    ResizableColumns.prototype.defaults = {
+      store: window.store
+    };
 
-    if (options == null) {
-      options = {};
+    function ResizableColumns($table, options) {
+      this.mousedown = __bind(this.mousedown, this);      this.options = $.extend({}, this.defaults, options);
+      this.$table = $table;
+      this.tableId = this.$table.data('resizable-columns-id');
+      this.createHandles();
+      this.restoreColumnWidths();
+      this.syncHandleWidths();
     }
-    if (method && typeof method !== 'string') {
-      options = method;
-    }
-    makeResizable = function($table) {
-      var $currentGrip, $handleContainer, $leftColumn, $rightColumn, createHandles, mousedown, mousemove, mouseup, restoreColumnWidths, saveColumnWidths, startPosition, syncHandle, syncHandleWidths, tableId;
 
-      tableId = $table.data('resizable-columns-id');
-      $handleContainer = void 0;
-      startPosition = void 0;
-      $currentGrip = void 0;
-      $leftColumn = void 0;
-      $rightColumn = void 0;
-      mouseup = function() {
-        $(document).off('mousemove.rc');
-        return saveColumnWidths();
-      };
-      mousemove = function(e) {
+    ResizableColumns.prototype.createHandles = function() {
+      var _this = this;
+
+      this.$table.before((this.$handleContainer = $("<div class='rc-handle-container' />")));
+      this.$table.find('tr th').each(function(_, el) {
+        var $handle;
+
+        $handle = $("<div class='rc-handle' />");
+        $handle.data('th', $(el));
+        return $handle.appendTo(_this.$handleContainer);
+      });
+      return this.$handleContainer.on('mousedown', '.rc-handle', this.mousedown);
+    };
+
+    ResizableColumns.prototype.syncHandleWidths = function() {
+      var _this = this;
+
+      this.$handleContainer.width(this.$table.width());
+      return this.$handleContainer.find('.rc-handle').each(function(_, el) {
+        return $(el).css({
+          left: $(el).data('th').outerWidth() + ($(el).data('th').offset().left - _this.$handleContainer.offset().left),
+          height: _this.$table.height()
+        });
+      });
+    };
+
+    ResizableColumns.prototype.saveColumnWidths = function() {
+      var _this = this;
+
+      return this.$table.find('tr th').each(function(_, el) {
+        var id;
+
+        id = _this.tableId + '-' + $(el).data('resizable-column-id');
+        if (_this.options.store != null) {
+          return store.set(id, $(el).width());
+        }
+      });
+    };
+
+    ResizableColumns.prototype.restoreColumnWidths = function() {
+      var _this = this;
+
+      return this.$table.find('tr th').each(function(_, el) {
+        var id, width;
+
+        id = _this.tableId + '-' + $(el).data('resizable-column-id');
+        if ((_this.options.store != null) && (width = store.get(id))) {
+          return $(el).width(width);
+        }
+      });
+    };
+
+    ResizableColumns.prototype.mousedown = function(e) {
+      var $currentGrip, $leftColumn, $rightColumn, handleIndex,
+        _this = this;
+
+      e.preventDefault();
+      this.startPosition = e.pageX;
+      $currentGrip = $(e.currentTarget);
+      $leftColumn = $currentGrip.data('th');
+      $leftColumn.data('startWidth', $leftColumn.width());
+      handleIndex = this.$handleContainer.find('.rc-handle').index($currentGrip);
+      $rightColumn = this.$table.find('tr th').eq(handleIndex + 1);
+      $rightColumn.data('startWidth', $rightColumn.width());
+      $(document).on('mousemove.rc', function(e) {
         var difference, newLeftColumnWidth, newRightColumnWidth;
 
-        difference = e.pageX - startPosition;
+        difference = e.pageX - _this.startPosition;
         newRightColumnWidth = $rightColumn.data('startWidth') - difference;
         newLeftColumnWidth = $leftColumn.data('startWidth') + difference;
         if (((parseInt($rightColumn[0].style.width) < $rightColumn.width()) && (newRightColumnWidth < $rightColumn.width())) || ((parseInt($leftColumn[0].style.width) < $leftColumn.width()) && (newLeftColumnWidth < $leftColumn.width()))) {
@@ -36,86 +93,34 @@ $.fn.extend({
         }
         $leftColumn.width(newLeftColumnWidth);
         $rightColumn.width(newRightColumnWidth);
-        return syncHandleWidths();
-      };
-      mousedown = function(e) {
-        var handleIndex;
-
-        e.preventDefault();
-        startPosition = e.pageX;
-        $currentGrip = $(e.currentTarget);
-        $leftColumn = $currentGrip.data('th');
-        $leftColumn.data('startWidth', $leftColumn.width());
-        handleIndex = $handleContainer.find('.rc-handle').index($currentGrip);
-        $rightColumn = $table.find('tr th').eq(handleIndex + 1);
-        $rightColumn.data('startWidth', $rightColumn.width());
-        $(document).on('mousemove.rc', mousemove);
-        return $(document).one('mouseup', mouseup);
-      };
-      createHandles = function() {
-        $table.before(($handleContainer = $("<div class='rc-handle-container' />")));
-        $table.data('handleContainer', $handleContainer);
-        $table.find('tr th').each(function() {
-          var $handle;
-
-          $handle = $("<div class='rc-handle' />");
-          $handle.data('th', $(this));
-          return $handle.appendTo($handleContainer);
-        });
-        return $handleContainer.on('mousedown', '.rc-handle', mousedown);
-      };
-      syncHandleWidths = function() {
-        $handleContainer.width($table.width());
-        return $handleContainer.find('.rc-handle').each(function() {
-          return syncHandle($(this));
-        });
-      };
-      saveColumnWidths = function() {
-        return $table.find('tr th').each(function() {
-          var id;
-
-          id = tableId + '-' + $(this).data('resizable-column-id');
-          if (options.store != null) {
-            return store.set(id, $(this).width());
-          }
-        });
-      };
-      restoreColumnWidths = function() {
-        return $table.find('tr th').each(function() {
-          var id, width;
-
-          id = tableId + '-' + $(this).data('resizable-column-id');
-          if ((options.store != null) && (width = store.get(id))) {
-            return $(this).width(width);
-          }
-        });
-      };
-      syncHandle = function($handle) {
-        return $handle.css({
-          left: $handle.data('th').outerWidth() + ($handle.data('th').offset().left - $handleContainer.offset().left),
-          height: $table.height()
-        });
-      };
-      createHandles();
-      restoreColumnWidths();
-      return syncHandleWidths();
+        return _this.syncHandleWidths();
+      });
+      return $(document).one('mouseup', function() {
+        $(document).off('mousemove.rc');
+        return _this.saveColumnWidths();
+      });
     };
-    return $(this).each(function() {
-      if (method === 'destroy') {
-        if (!$(this).data('handleContainer')) {
-          return;
+
+    return ResizableColumns;
+
+  })();
+  return $.fn.extend({
+    resizableColumns: function() {
+      var args, option;
+
+      option = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      return this.each(function() {
+        var $table, data;
+
+        $table = $(this);
+        data = $table.data('resizableColumns');
+        if (!data) {
+          $table.data('resizableColumns', (data = new ResizableColumns($table, option)));
         }
-        $(this).data('handleContainer').remove();
-        $(this).removeData('handleContainer');
-        return $(this).find('tr th').each(function() {
-          $(this).removeData('th');
-          if (options.resetWidths) {
-            return $(this).width('');
-          }
-        });
-      } else {
-        return makeResizable($(this));
-      }
-    });
-  }
-});
+        if (typeof option === 'string') {
+          return data[option].apply(data, args);
+        }
+      });
+    }
+  });
+})(window.jQuery, window);
