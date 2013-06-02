@@ -6,7 +6,8 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 
   ResizableColumns = (function() {
     ResizableColumns.prototype.defaults = {
-      store: window.store
+      store: window.store,
+      rigidSizing: false
     };
 
     function ResizableColumns($table, options) {
@@ -30,10 +31,9 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       this.$table.find('tr th').each(function(i, el) {
         var $handle;
 
-        if (_this.$table.find('tr th').eq(i + 1).length === 0 || (_this.$table.find('tr th').eq(i).attr('data-noresize') != null)) {
+        if (_this.$table.find('tr th').eq(i + 1).length === 0 || (_this.$table.find('tr th').eq(i).attr('data-noresize') != null) || (_this.$table.find('tr th').eq(i + 1).attr('data-noresize') != null)) {
           return;
         }
-        _this.$table.find('tr th').eq(i + 1).attr('data-noresize') != null;
         $handle = $("<div class='rc-handle' />");
         $handle.data('th', $(el));
         return $handle.appendTo(_this.$handleContainer);
@@ -59,9 +59,11 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       return this.$table.find('tr th').each(function(_, el) {
         var id;
 
-        id = _this.tableId + '-' + $(el).data('resizable-column-id');
-        if (_this.options.store != null) {
-          return store.set(id, $(el).width());
+        if ($(el).attr('data-noresize') == null) {
+          id = _this.tableId + '-' + $(el).data('resizable-column-id');
+          if (_this.options.store != null) {
+            return store.set(id, $(el).width());
+          }
         }
       });
     };
@@ -80,7 +82,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     };
 
     ResizableColumns.prototype.mousedown = function(e) {
-      var $currentGrip, $leftColumn, $rightColumn, leftColumnStartWidth, rightColumnStartWidth,
+      var $currentGrip, $leftColumn, $rightColumn, idx, leftColumnStartWidth, rightColumnStartWidth,
         _this = this;
 
       e.preventDefault();
@@ -88,7 +90,8 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       $currentGrip = $(e.currentTarget);
       $leftColumn = $currentGrip.data('th');
       leftColumnStartWidth = $leftColumn.width();
-      $rightColumn = this.$table.find('tr th').eq(this.$handleContainer.find('.rc-handle').index($currentGrip) + 1);
+      idx = this.$table.find('tr th').index($currentGrip.data('th'));
+      $rightColumn = this.$table.find('tr th').eq(idx + 1);
       rightColumnStartWidth = $rightColumn.width();
       $(document).on('mousemove.rc', function(e) {
         var difference, newLeftColumnWidth, newRightColumnWidth;
@@ -96,7 +99,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         difference = e.pageX - _this.startPosition;
         newRightColumnWidth = rightColumnStartWidth - difference;
         newLeftColumnWidth = leftColumnStartWidth + difference;
-        if (((parseInt($rightColumn[0].style.width) < $rightColumn.width()) && (newRightColumnWidth < $rightColumn.width())) || ((parseInt($leftColumn[0].style.width) < $leftColumn.width()) && (newLeftColumnWidth < $leftColumn.width()))) {
+        if (_this.options.rigidSizing && ((parseInt($rightColumn[0].style.width) < $rightColumn.width()) && (newRightColumnWidth < $rightColumn.width())) || ((parseInt($leftColumn[0].style.width) < $leftColumn.width()) && (newLeftColumnWidth < $leftColumn.width()))) {
           return;
         }
         $leftColumn.width(newLeftColumnWidth);

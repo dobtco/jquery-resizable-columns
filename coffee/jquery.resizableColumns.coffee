@@ -5,6 +5,7 @@
 
     defaults:
       store: window.store
+      rigidSizing: false # when resizing a column, keep all other columns still
 
     constructor: ($table, options) ->
       @options = $.extend({}, @defaults, options)
@@ -23,7 +24,7 @@
       @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))
       @$table.find('tr th').each (i, el) =>
         return if @$table.find('tr th').eq(i + 1).length == 0 ||
-                  @$table.find('tr th').eq(i).attr('data-noresize')?
+                  @$table.find('tr th').eq(i).attr('data-noresize')? ||
                   @$table.find('tr th').eq(i + 1).attr('data-noresize')?
 
         $handle = $("<div class='rc-handle' />")
@@ -41,9 +42,10 @@
 
     saveColumnWidths: ->
       @$table.find('tr th').each (_, el) =>
-        id = @tableId + '-' + $(el).data('resizable-column-id') # + 'v1' for easy flush in development
-        if @options.store?
-          store.set id, $(el).width()
+        unless $(el).attr('data-noresize')?
+          id = @tableId + '-' + $(el).data('resizable-column-id') # + 'v1' for easy flush in development
+          if @options.store?
+            store.set id, $(el).width()
 
     restoreColumnWidths: ->
       @$table.find('tr th').each (_, el) =>
@@ -58,7 +60,8 @@
       $currentGrip = $(e.currentTarget)
       $leftColumn = $currentGrip.data('th')
       leftColumnStartWidth = $leftColumn.width()
-      $rightColumn = @$table.find('tr th').eq(@$handleContainer.find('.rc-handle').index($currentGrip) + 1)
+      idx = @$table.find('tr th').index($currentGrip.data('th'))
+      $rightColumn = @$table.find('tr th').eq(idx + 1)
       rightColumnStartWidth = $rightColumn.width()
 
       $(document).on 'mousemove.rc', (e) =>
@@ -67,16 +70,20 @@
         newLeftColumnWidth = leftColumnStartWidth + difference
 
 
-        if ( (parseInt($rightColumn[0].style.width) < $rightColumn.width()) &&
-              (newRightColumnWidth < $rightColumn.width()) ) ||
-            ( (parseInt($leftColumn[0].style.width) < $leftColumn.width()) &&
-              (newLeftColumnWidth < $leftColumn.width()) )
+
+        if @options.rigidSizing &&
+           ( (parseInt($rightColumn[0].style.width) < $rightColumn.width()) &&
+             (newRightColumnWidth < $rightColumn.width()) ) ||
+           ( (parseInt($leftColumn[0].style.width) < $leftColumn.width()) &&
+             (newLeftColumnWidth < $leftColumn.width()) )
 
           # console.log '======'
+          # console.log '$rightColumn.text()', $rightColumn.text()
           # console.log '$rightColumn.width()', $rightColumn.width()
           # console.log 'parseInt($rightColumn[0].style.width)', parseInt($rightColumn[0].style.width)
           # console.log 'newRightColumnWidth', newRightColumnWidth
           # console.log '---'
+          # console.log '$leftColumn.text()', $leftColumn.text()
           # console.log '$leftColumn.width()', $leftColumn.width()
           # console.log 'parseInt($leftColumn[0].style.width)', parseInt($leftColumn[0].style.width)
           # console.log 'newLeftColumnWidth', newLeftColumnWidth
