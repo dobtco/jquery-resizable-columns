@@ -102,6 +102,9 @@ $.fn.extend({
     };
     return $(this).each(function() {
       if (method === 'destroy') {
+        if (!$(this).data('handleContainer')) {
+          return;
+        }
         $(this).data('handleContainer').remove();
         $(this).removeData('handleContainer');
         return $(this).find('tr th').each(function() {

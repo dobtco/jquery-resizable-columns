@@ -83,6 +83,7 @@ $.fn.extend
 
     $(@).each ->
       if method == 'destroy'
+        return unless $(@).data('handleContainer')
         $(@).data('handleContainer').remove()
         $(@).removeData('handleContainer')
         $(@).find('tr th').each ->
