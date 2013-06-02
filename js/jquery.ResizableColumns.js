@@ -30,9 +30,10 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       this.$table.find('tr th').each(function(i, el) {
         var $handle;
 
-        if (_this.$table.find('tr th').eq(i + 1).length === 0 || (_this.$table.find('tr th').eq(i + 1).attr('data-noresize') != null)) {
+        if (_this.$table.find('tr th').eq(i + 1).length === 0 || (_this.$table.find('tr th').eq(i).attr('data-noresize') != null)) {
           return;
         }
+        _this.$table.find('tr th').eq(i + 1).attr('data-noresize') != null;
         $handle = $("<div class='rc-handle' />");
         $handle.data('th', $(el));
         return $handle.appendTo(_this.$handleContainer);

@@ -23,6 +23,7 @@
       @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))
       @$table.find('tr th').each (i, el) =>
         return if @$table.find('tr th').eq(i + 1).length == 0 ||
+                  @$table.find('tr th').eq(i).attr('data-noresize')?
                   @$table.find('tr th').eq(i + 1).attr('data-noresize')?
 
         $handle = $("<div class='rc-handle' />")
