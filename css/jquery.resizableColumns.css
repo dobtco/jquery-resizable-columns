@@ -5,8 +5,6 @@
   position: absolute;
   width: 7px;
   cursor: ew-resize;
-  margin-left: -3px;
-  background: black;
-  opacity: 0.2; }
+  margin-left: -3px; }
   .rc-handle:last-child {
     display: none; }
