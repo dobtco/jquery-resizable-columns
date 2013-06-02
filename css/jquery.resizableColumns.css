@@ -4,7 +4,7 @@
 .rc-handle {
   position: absolute;
   width: 7px;
-  cursor: e-resize;
+  cursor: ew-resize;
   margin-left: -3px; }
   .rc-handle:last-child {
     display: none; }
