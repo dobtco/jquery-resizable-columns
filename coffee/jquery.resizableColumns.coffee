@@ -15,6 +15,10 @@
       @restoreColumnWidths()
       @syncHandleWidths()
 
+    destroy: ->
+      @$handleContainer.remove()
+      @$table.removeData('resizableColumns')
+
     createHandles: ->
       @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))
       @$table.find('tr th').each (_, el) =>

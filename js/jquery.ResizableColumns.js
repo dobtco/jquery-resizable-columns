@@ -18,6 +18,11 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       this.syncHandleWidths();
     }
 
+    ResizableColumns.prototype.destroy = function() {
+      this.$handleContainer.remove();
+      return this.$table.removeData('resizableColumns');
+    };
+
     ResizableColumns.prototype.createHandles = function() {
       var _this = this;
 
