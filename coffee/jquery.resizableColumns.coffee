@@ -16,9 +16,12 @@
       @restoreColumnWidths()
       @syncHandleWidths()
 
+      $(window).on 'resize.rc', ( => @syncHandleWidths() )
+
     destroy: ->
       @$handleContainer.remove()
       @$table.removeData('resizableColumns')
+      $(window).off '.rc'
 
     createHandles: ->
       @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))

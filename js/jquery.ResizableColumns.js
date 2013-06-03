@@ -11,17 +11,24 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     };
 
     function ResizableColumns($table, options) {
-      this.mousedown = __bind(this.mousedown, this);      this.options = $.extend({}, this.defaults, options);
+      this.mousedown = __bind(this.mousedown, this);
+      var _this = this;
+
+      this.options = $.extend({}, this.defaults, options);
       this.$table = $table;
       this.tableId = this.$table.data('resizable-columns-id');
       this.createHandles();
       this.restoreColumnWidths();
       this.syncHandleWidths();
+      $(window).on('resize.rc', (function() {
+        return _this.syncHandleWidths();
+      }));
     }
 
     ResizableColumns.prototype.destroy = function() {
       this.$handleContainer.remove();
-      return this.$table.removeData('resizableColumns');
+      this.$table.removeData('resizableColumns');
+      return $(window).off('.rc');
     };
 
     ResizableColumns.prototype.createHandles = function() {
