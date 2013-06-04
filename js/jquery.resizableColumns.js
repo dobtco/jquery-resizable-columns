@@ -6,7 +6,8 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   ResizableColumns = (function() {
     ResizableColumns.prototype.defaults = {
       store: window.store,
-      rigidSizing: false
+      rigidSizing: false,
+      resizeFromBody: true
     };
 
     function ResizableColumns($table, options) {
@@ -50,7 +51,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       return this.$handleContainer.find('.rc-handle').each(function(_, el) {
         return $(el).css({
           left: $(el).data('th').outerWidth() + ($(el).data('th').offset().left - _this.$handleContainer.offset().left),
-          height: _this.$table.height()
+          height: _this.options.resizeFromBody ? _this.$table.height() : _this.$table.find('thead').height()
         });
       });
     };
