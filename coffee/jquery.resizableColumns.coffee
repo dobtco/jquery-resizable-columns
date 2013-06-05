@@ -6,6 +6,7 @@
     defaults:
       store: window.store
       rigidSizing: false # when resizing a column, keep all other columns still
+      resizeFromBody: true # allows for resizing of columns from within tbody
 
     constructor: ($table, options) ->
       @options = $.extend({}, @defaults, options)
@@ -41,7 +42,7 @@
       @$handleContainer.find('.rc-handle').each (_, el) =>
         $(el).css
           left: $(el).data('th').outerWidth() + ($(el).data('th').offset().left - @$handleContainer.offset().left)
-          height: @$table.height()
+          height: if @options.resizeFromBody then @$table.height() else @$table.find('thead').height()
 
     saveColumnWidths: ->
       @$table.find('tr th').each (_, el) =>
