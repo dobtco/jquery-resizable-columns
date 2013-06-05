@@ -15,8 +15,8 @@ module.exports = function(grunt) {
 
     coffee: {
       all: {
-        src: 'coffee/jquery.ResizableColumns.coffee',
-        dest: 'js/jquery.ResizableColumns.js',
+        src: 'coffee/jquery.resizableColumns.coffee',
+        dest: 'js/jquery.resizableColumns.js',
         options: {bare: true}
       },
     },
