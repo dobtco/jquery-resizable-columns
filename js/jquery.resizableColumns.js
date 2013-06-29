@@ -36,10 +36,10 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       var _this = this;
 
       this.$table.before((this.$handleContainer = $("<div class='rc-handle-container' />")));
-      this.$table.find('tr th').each(function(i, el) {
+      this.$table.find('tr th:visible').each(function(i, el) {
         var $handle;
 
-        if (_this.$table.find('tr th').eq(i + 1).length === 0 || (_this.$table.find('tr th').eq(i).attr('data-noresize') != null) || (_this.$table.find('tr th').eq(i + 1).attr('data-noresize') != null)) {
+        if (_this.$table.find('tr th:visible').eq(i + 1).length === 0 || (_this.$table.find('tr th:visible').eq(i).attr('data-noresize') != null) || (_this.$table.find('tr th:visible').eq(i + 1).attr('data-noresize') != null)) {
           return;
         }
         $handle = $("<div class='rc-handle' />");
@@ -64,7 +64,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     ResizableColumns.prototype.saveColumnWidths = function() {
       var _this = this;
 
-      return this.$table.find('tr th').each(function(_, el) {
+      return this.$table.find('tr th:visible').each(function(_, el) {
         var id;
 
         if ($(el).attr('data-noresize') == null) {
@@ -79,7 +79,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     ResizableColumns.prototype.restoreColumnWidths = function() {
       var _this = this;
 
-      return this.$table.find('tr th').each(function(_, el) {
+      return this.$table.find('tr th:visible').each(function(_, el) {
         var id, width;
 
         id = _this.tableId + '-' + $(el).data('resizable-column-id');
@@ -98,9 +98,10 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       $currentGrip = $(e.currentTarget);
       $leftColumn = $currentGrip.data('th');
       leftColumnStartWidth = $leftColumn.width();
-      idx = this.$table.find('tr th').index($currentGrip.data('th'));
-      $rightColumn = this.$table.find('tr th').eq(idx + 1);
+      idx = this.$table.find('tr th:visible').index($currentGrip.data('th'));
+      $rightColumn = this.$table.find('tr th:visible').eq(idx + 1);
       rightColumnStartWidth = $rightColumn.width();
+      this.$table.addClass('rc-table-resizing');
       $(document).on('mousemove.rc', function(e) {
         var difference, newLeftColumnWidth, newRightColumnWidth;
 
@@ -111,11 +112,12 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
           return;
         }
         $leftColumn.width(newLeftColumnWidth);
-        $rightColumn.width(newRightColumnWidth);
-        return _this.syncHandleWidths();
+        return $rightColumn.width(newRightColumnWidth);
       });
       return $(document).one('mouseup', function() {
         $(document).off('mousemove.rc');
+        _this.$table.removeClass('rc-table-resizing');
+        _this.syncHandleWidths();
         return _this.saveColumnWidths();
       });
     };

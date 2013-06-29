@@ -26,10 +26,10 @@
 
     createHandles: ->
       @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))
-      @$table.find('tr th').each (i, el) =>
-        return if @$table.find('tr th').eq(i + 1).length == 0 ||
-                  @$table.find('tr th').eq(i).attr('data-noresize')? ||
-                  @$table.find('tr th').eq(i + 1).attr('data-noresize')?
+      @$table.find('tr th:visible').each (i, el) =>
+        return if @$table.find('tr th:visible').eq(i + 1).length == 0 ||
+                  @$table.find('tr th:visible').eq(i).attr('data-noresize')? ||
+                  @$table.find('tr th:visible').eq(i + 1).attr('data-noresize')?
 
         $handle = $("<div class='rc-handle' />")
         $handle.data('th', $(el))
@@ -45,14 +45,14 @@
           height: if @options.resizeFromBody then @$table.height() else @$table.find('thead').height()
 
     saveColumnWidths: ->
-      @$table.find('tr th').each (_, el) =>
+      @$table.find('tr th:visible').each (_, el) =>
         unless $(el).attr('data-noresize')?
           id = @tableId + '-' + $(el).data('resizable-column-id') # + 'v1' for easy flush in development
           if @options.store?
             store.set id, $(el).width()
 
     restoreColumnWidths: ->
-      @$table.find('tr th').each (_, el) =>
+      @$table.find('tr th:visible').each (_, el) =>
         id = @tableId + '-' + $(el).data('resizable-column-id') # + 'v1' for easy flush in development
         if @options.store? && (width = store.get(id))
           $(el).width(width)
@@ -64,9 +64,10 @@
       $currentGrip = $(e.currentTarget)
       $leftColumn = $currentGrip.data('th')
       leftColumnStartWidth = $leftColumn.width()
-      idx = @$table.find('tr th').index($currentGrip.data('th'))
-      $rightColumn = @$table.find('tr th').eq(idx + 1)
+      idx = @$table.find('tr th:visible').index($currentGrip.data('th'))
+      $rightColumn = @$table.find('tr th:visible').eq(idx + 1)
       rightColumnStartWidth = $rightColumn.width()
+      @$table.addClass('rc-table-resizing')
 
       $(document).on 'mousemove.rc', (e) =>
         difference = (e.pageX - @startPosition)
@@ -98,10 +99,10 @@
         $leftColumn.width(newLeftColumnWidth)
         $rightColumn.width(newRightColumnWidth)
 
-        @syncHandleWidths()
-
       $(document).one 'mouseup', =>
         $(document).off 'mousemove.rc'
+        @$table.removeClass('rc-table-resizing')
+        @syncHandleWidths()
         @saveColumnWidths()
 
   # Define the plugin
