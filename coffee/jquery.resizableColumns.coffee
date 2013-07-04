@@ -1,5 +1,11 @@
 (($, window) ->
 
+  parseWidth = (node) ->
+    parseFloat(node.style.width.replace('%', ''))
+
+  setWidth = (node, width) ->
+    node.style.width = "#{width}%"
+
   # Define the plugin class
   class ResizableColumns
 
@@ -10,26 +16,38 @@
 
     constructor: ($table, options) ->
       @options = $.extend({}, @defaults, options)
+      @options.store = undefined
       @$table = $table
-      @tableId = @$table.data('resizable-columns-id')
 
-      @createHandles()
+      @setHeaders()
+      @assignPercentageWidths()
       @restoreColumnWidths()
+      @createHandles()
       @syncHandleWidths()
 
       $(window).on 'resize.rc', ( => @syncHandleWidths() )
+
+    getColumnId: ($el) ->
+      @$table.data('resizable-columns-id') + '-' + $el.data('resizable-column-id')
+
+    setHeaders: ->
+      @$tableHeaders = @$table.find('tr th:visible')
 
     destroy: ->
       @$handleContainer.remove()
       @$table.removeData('resizableColumns')
       $(window).off '.rc'
 
+    assignPercentageWidths: ->
+      @$tableHeaders.each (_, el) =>
+        $(el).width "#{($(el).outerWidth() / @$table.width() * 100).toFixed(4)}%"
+
     createHandles: ->
       @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))
-      @$table.find('tr th:visible').each (i, el) =>
-        return if @$table.find('tr th:visible').eq(i + 1).length == 0 ||
-                  @$table.find('tr th:visible').eq(i).attr('data-noresize')? ||
-                  @$table.find('tr th:visible').eq(i + 1).attr('data-noresize')?
+      @$tableHeaders.each (i, el) =>
+        return if @$tableHeaders.eq(i + 1).length == 0 ||
+                  @$tableHeaders.eq(i).attr('data-noresize')? ||
+                  @$tableHeaders.eq(i + 1).attr('data-noresize')?
 
         $handle = $("<div class='rc-handle' />")
         $handle.data('th', $(el))
@@ -38,66 +56,52 @@
       @$handleContainer.on 'mousedown', '.rc-handle', @mousedown
 
     syncHandleWidths: ->
-      @$handleContainer.width(@$table.width())
-      @$handleContainer.find('.rc-handle').each (_, el) =>
-        $(el).css
-          left: $(el).data('th').outerWidth() + ($(el).data('th').offset().left - @$handleContainer.offset().left)
+      @setHeaders()
+      @$handleContainer.width(@$table.width()).find('.rc-handle').each (_, el) =>
+        $el = $(el)
+        $el.css
+          left: $el.data('th').outerWidth() + ($el.data('th').offset().left - @$handleContainer.offset().left)
           height: if @options.resizeFromBody then @$table.height() else @$table.find('thead').height()
 
     saveColumnWidths: ->
-      @$table.find('tr th:visible').each (_, el) =>
-        unless $(el).attr('data-noresize')?
-          id = @tableId + '-' + $(el).data('resizable-column-id') # + 'v1' for easy flush in development
+      @$tableHeaders.each (_, el) =>
+        $el = $(el)
+        unless $el.attr('data-noresize')?
           if @options.store?
-            store.set id, $(el).width()
+            store.set @getColumnId($el), parseWidth($el)
 
     restoreColumnWidths: ->
-      @$table.find('tr th:visible').each (_, el) =>
-        id = @tableId + '-' + $(el).data('resizable-column-id') # + 'v1' for easy flush in development
-        if @options.store? && (width = store.get(id))
-          $(el).width(width)
+      @$tableHeaders.each (_, el) =>
+        $el = $(el)
+        if @options.store? && (width = store.get(@getColumnId($el)))
+          $el.width(width)
+
+    totalColumnWidths: ->
+      total = 0
+
+      @$tableHeaders.each (_, el) =>
+        total += parseFloat($(el)[0].style.width.replace('%', ''))
+
+      total
 
     mousedown: (e) =>
       e.preventDefault()
 
-      @startPosition = e.pageX
+      startPosition = e.pageX
       $currentGrip = $(e.currentTarget)
       $leftColumn = $currentGrip.data('th')
-      leftColumnStartWidth = $leftColumn.width()
-      idx = @$table.find('tr th:visible').index($currentGrip.data('th'))
-      $rightColumn = @$table.find('tr th:visible').eq(idx + 1)
-      rightColumnStartWidth = $rightColumn.width()
+      $rightColumn = @$tableHeaders.eq @$tableHeaders.index($leftColumn) + 1
+
+      widths =
+        left: parseWidth($leftColumn[0])
+        right: parseWidth($rightColumn[0])
+
       @$table.addClass('rc-table-resizing')
 
       $(document).on 'mousemove.rc', (e) =>
-        difference = (e.pageX - @startPosition)
-        newRightColumnWidth = rightColumnStartWidth - difference
-        newLeftColumnWidth = leftColumnStartWidth + difference
-
-
-
-        if @options.rigidSizing &&
-           ( (parseInt($rightColumn[0].style.width) < $rightColumn.width()) &&
-             (newRightColumnWidth < $rightColumn.width()) ) ||
-           ( (parseInt($leftColumn[0].style.width) < $leftColumn.width()) &&
-             (newLeftColumnWidth < $leftColumn.width()) )
-
-          # console.log '======'
-          # console.log '$rightColumn.text()', $rightColumn.text()
-          # console.log '$rightColumn.width()', $rightColumn.width()
-          # console.log 'parseInt($rightColumn[0].style.width)', parseInt($rightColumn[0].style.width)
-          # console.log 'newRightColumnWidth', newRightColumnWidth
-          # console.log '---'
-          # console.log '$leftColumn.text()', $leftColumn.text()
-          # console.log '$leftColumn.width()', $leftColumn.width()
-          # console.log 'parseInt($leftColumn[0].style.width)', parseInt($leftColumn[0].style.width)
-          # console.log 'newLeftColumnWidth', newLeftColumnWidth
-          # console.log '======'
-
-          return
-
-        $leftColumn.width(newLeftColumnWidth)
-        $rightColumn.width(newRightColumnWidth)
+        difference = ((e.pageX - startPosition) / @$table.width() * 100)
+        setWidth($rightColumn[0], widths.right - difference)
+        setWidth($leftColumn[0], widths.left + difference)
 
       $(document).one 'mouseup', =>
         $(document).off 'mousemove.rc'
