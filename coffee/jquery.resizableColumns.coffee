@@ -4,6 +4,7 @@
     parseFloat(node.style.width.replace('%', ''))
 
   setWidth = (node, width) ->
+    width = width.toFixed(2)
     node.style.width = "#{width}%"
 
   # Define the plugin class
@@ -16,13 +17,10 @@
 
     constructor: ($table, options) ->
       @options = $.extend({}, @defaults, options)
-      @options.store = undefined
       @$table = $table
 
       @setHeaders()
-      @assignPercentageWidths()
       @restoreColumnWidths()
-      @createHandles()
       @syncHandleWidths()
 
       $(window).on 'resize.rc', ( => @syncHandleWidths() )
@@ -32,6 +30,8 @@
 
     setHeaders: ->
       @$tableHeaders = @$table.find('tr th:visible')
+      @assignPercentageWidths()
+      @createHandles()
 
     destroy: ->
       @$handleContainer.remove()
@@ -40,9 +40,11 @@
 
     assignPercentageWidths: ->
       @$tableHeaders.each (_, el) =>
-        $(el).width "#{($(el).outerWidth() / @$table.width() * 100).toFixed(4)}%"
+        $el = $(el)
+        setWidth $el[0], ($el.outerWidth() / @$table.width() * 100)
 
     createHandles: ->
+      $('.rc-handle-container').remove()
       @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))
       @$tableHeaders.each (i, el) =>
         return if @$tableHeaders.eq(i + 1).length == 0 ||
@@ -68,13 +70,13 @@
         $el = $(el)
         unless $el.attr('data-noresize')?
           if @options.store?
-            store.set @getColumnId($el), parseWidth($el)
+            store.set @getColumnId($el), parseWidth($el[0])
 
     restoreColumnWidths: ->
       @$tableHeaders.each (_, el) =>
         $el = $(el)
         if @options.store? && (width = store.get(@getColumnId($el)))
-          $el.width(width)
+          setWidth $el[0], width
 
     totalColumnWidths: ->
       total = 0

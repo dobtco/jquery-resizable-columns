@@ -8,6 +8,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     return parseFloat(node.style.width.replace('%', ''));
   };
   setWidth = function(node, width) {
+    width = width.toFixed(2);
     return node.style.width = "" + width + "%";
   };
   ResizableColumns = (function() {
@@ -22,12 +23,9 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       var _this = this;
 
       this.options = $.extend({}, this.defaults, options);
-      this.options.store = void 0;
       this.$table = $table;
       this.setHeaders();
-      this.assignPercentageWidths();
       this.restoreColumnWidths();
-      this.createHandles();
       this.syncHandleWidths();
       $(window).on('resize.rc', (function() {
         return _this.syncHandleWidths();
@@ -39,7 +37,9 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     };
 
     ResizableColumns.prototype.setHeaders = function() {
-      return this.$tableHeaders = this.$table.find('tr th:visible');
+      this.$tableHeaders = this.$table.find('tr th:visible');
+      this.assignPercentageWidths();
+      return this.createHandles();
     };
 
     ResizableColumns.prototype.destroy = function() {
@@ -52,13 +52,17 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       var _this = this;
 
       return this.$tableHeaders.each(function(_, el) {
-        return $(el).width("" + (($(el).outerWidth() / _this.$table.width() * 100).toFixed(4)) + "%");
+        var $el;
+
+        $el = $(el);
+        return setWidth($el[0], $el.outerWidth() / _this.$table.width() * 100);
       });
     };
 
     ResizableColumns.prototype.createHandles = function() {
       var _this = this;
 
+      $('.rc-handle-container').remove();
       this.$table.before((this.$handleContainer = $("<div class='rc-handle-container' />")));
       this.$tableHeaders.each(function(i, el) {
         var $handle;
@@ -97,7 +101,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         $el = $(el);
         if ($el.attr('data-noresize') == null) {
           if (_this.options.store != null) {
-            return store.set(_this.getColumnId($el), parseWidth($el));
+            return store.set(_this.getColumnId($el), parseWidth($el[0]));
           }
         }
       });
@@ -111,7 +115,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 
         $el = $(el);
         if ((_this.options.store != null) && (width = store.get(_this.getColumnId($el)))) {
-          return $el.width(width);
+          return setWidth($el[0], width);
         }
       });
     };
