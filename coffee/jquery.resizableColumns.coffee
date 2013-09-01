@@ -44,7 +44,7 @@
         setWidth $el[0], ($el.outerWidth() / @$table.width() * 100)
 
     createHandles: ->
-      $('.rc-handle-container').remove()
+      @$handleContainer?.remove()
       @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))
       @$tableHeaders.each (i, el) =>
         return if @$tableHeaders.eq(i + 1).length == 0 ||
