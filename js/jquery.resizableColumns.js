@@ -101,7 +101,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         $el = $(el);
         if ($el.attr('data-noresize') == null) {
           if (_this.options.store != null) {
-            return store.set(_this.getColumnId($el), parseWidth($el[0]));
+            return _this.options.store.set(_this.getColumnId($el), parseWidth($el[0]));
           }
         }
       });
@@ -114,7 +114,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         var $el, width;
 
         $el = $(el);
-        if ((_this.options.store != null) && (width = store.get(_this.getColumnId($el)))) {
+        if ((_this.options.store != null) && (width = _this.options.store.get(_this.getColumnId($el)))) {
           return setWidth($el[0], width);
         }
       });
