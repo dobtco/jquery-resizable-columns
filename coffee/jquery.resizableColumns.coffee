@@ -70,12 +70,12 @@
         $el = $(el)
         unless $el.attr('data-noresize')?
           if @options.store?
-            store.set @getColumnId($el), parseWidth($el[0])
+            @options.store.set @getColumnId($el), parseWidth($el[0])
 
     restoreColumnWidths: ->
       @$tableHeaders.each (_, el) =>
         $el = $(el)
-        if @options.store? && (width = store.get(@getColumnId($el)))
+        if @options.store? && (width = @options.store.get(@getColumnId($el)))
           setWidth $el[0], width
 
     totalColumnWidths: ->
