@@ -3,7 +3,6 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 
 (function($, window) {
   var ResizableColumns, parseWidth, setWidth;
-
   parseWidth = function(node) {
     return parseFloat(node.style.width.replace('%', ''));
   };
@@ -21,7 +20,6 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     function ResizableColumns($table, options) {
       this.mousedown = __bind(this.mousedown, this);
       var _this = this;
-
       this.options = $.extend({}, this.defaults, options);
       this.$table = $table;
       this.setHeaders();
@@ -50,23 +48,22 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 
     ResizableColumns.prototype.assignPercentageWidths = function() {
       var _this = this;
-
       return this.$tableHeaders.each(function(_, el) {
         var $el;
-
         $el = $(el);
         return setWidth($el[0], $el.outerWidth() / _this.$table.width() * 100);
       });
     };
 
     ResizableColumns.prototype.createHandles = function() {
-      var _this = this;
-
-      $('.rc-handle-container').remove();
+      var _ref,
+        _this = this;
+      if ((_ref = this.$handleContainer) != null) {
+        _ref.remove();
+      }
       this.$table.before((this.$handleContainer = $("<div class='rc-handle-container' />")));
       this.$tableHeaders.each(function(i, el) {
         var $handle;
-
         if (_this.$tableHeaders.eq(i + 1).length === 0 || (_this.$tableHeaders.eq(i).attr('data-noresize') != null) || (_this.$tableHeaders.eq(i + 1).attr('data-noresize') != null)) {
           return;
         }
@@ -79,11 +76,9 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 
     ResizableColumns.prototype.syncHandleWidths = function() {
       var _this = this;
-
       this.setHeaders();
       return this.$handleContainer.width(this.$table.width()).find('.rc-handle').each(function(_, el) {
         var $el;
-
         $el = $(el);
         return $el.css({
           left: $el.data('th').outerWidth() + ($el.data('th').offset().left - _this.$handleContainer.offset().left),
@@ -94,10 +89,8 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 
     ResizableColumns.prototype.saveColumnWidths = function() {
       var _this = this;
-
       return this.$tableHeaders.each(function(_, el) {
         var $el;
-
         $el = $(el);
         if ($el.attr('data-noresize') == null) {
           if (_this.options.store != null) {
@@ -109,10 +102,8 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 
     ResizableColumns.prototype.restoreColumnWidths = function() {
       var _this = this;
-
       return this.$tableHeaders.each(function(_, el) {
         var $el, width;
-
         $el = $(el);
         if ((_this.options.store != null) && (width = _this.options.store.get(_this.getColumnId($el)))) {
           return setWidth($el[0], width);
@@ -123,7 +114,6 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     ResizableColumns.prototype.totalColumnWidths = function() {
       var total,
         _this = this;
-
       total = 0;
       this.$tableHeaders.each(function(_, el) {
         return total += parseFloat($(el)[0].style.width.replace('%', ''));
@@ -134,7 +124,6 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     ResizableColumns.prototype.mousedown = function(e) {
       var $currentGrip, $leftColumn, $rightColumn, startPosition, widths,
         _this = this;
-
       e.preventDefault();
       startPosition = e.pageX;
       $currentGrip = $(e.currentTarget);
@@ -147,7 +136,6 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       this.$table.addClass('rc-table-resizing');
       $(document).on('mousemove.rc', function(e) {
         var difference;
-
         difference = (e.pageX - startPosition) / _this.$table.width() * 100;
         setWidth($rightColumn[0], widths.right - difference);
         return setWidth($leftColumn[0], widths.left + difference);
@@ -166,11 +154,9 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   return $.fn.extend({
     resizableColumns: function() {
       var args, option;
-
       option = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       return this.each(function() {
         var $table, data;
-
         $table = $(this);
         data = $table.data('resizableColumns');
         if (!data) {
