@@ -7,6 +7,12 @@
     width = width.toFixed(2)
     node.style.width = "#{width}%"
 
+  pointerX = (e) ->
+    if e.type.indexOf('touch') == 0
+      return (e.originalEvent.touches[0] || e.originalEvent.changedTouches[0]).pageX
+
+    e.pageX
+
   # Define the plugin class
   class ResizableColumns
 
@@ -55,7 +61,7 @@
         $handle.data('th', $(el))
         $handle.appendTo(@$handleContainer)
 
-      @$handleContainer.on 'mousedown', '.rc-handle', @mousedown
+      @$handleContainer.on 'mousedown touchstart', '.rc-handle', @pointerdown
 
     syncHandleWidths: ->
       @setHeaders()
@@ -86,10 +92,10 @@
 
       total
 
-    mousedown: (e) =>
+    pointerdown: (e) =>
       e.preventDefault()
 
-      startPosition = e.pageX
+      startPosition = pointerX e
       $currentGrip = $(e.currentTarget)
       $leftColumn = $currentGrip.data('th')
       $rightColumn = @$tableHeaders.eq @$tableHeaders.index($leftColumn) + 1
@@ -100,13 +106,13 @@
 
       @$table.addClass('rc-table-resizing')
 
-      $(document).on 'mousemove.rc', (e) =>
-        difference = ((e.pageX - startPosition) / @$table.width() * 100)
+      $(document).on 'mousemove.rc touchmove.rc', (e) =>
+        difference = (pointerX(e) - startPosition) / @$table.width() * 100
         setWidth($rightColumn[0], widths.right - difference)
         setWidth($leftColumn[0], widths.left + difference)
 
-      $(document).one 'mouseup', =>
-        $(document).off 'mousemove.rc'
+      $(document).one 'mouseup touchend', =>
+        $(document).off 'mousemove.rc touchmove.rc'
         @$table.removeClass('rc-table-resizing')
         @syncHandleWidths()
         @saveColumnWidths()
