@@ -115,6 +115,8 @@
         $(document).off 'mousemove.rc touchmove.rc'
         @$table.removeClass('rc-table-resizing')
         @syncHandleWidths()
+        
+        typeof @options.onResized === "function" && @options.onResized();
         @saveColumnWidths()
 
   # Define the plugin
