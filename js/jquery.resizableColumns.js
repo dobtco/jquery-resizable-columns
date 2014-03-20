@@ -35,6 +35,12 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         return _this.syncHandleWidths();
       }));
     }
+      
+    ResizableColumns.prototype.reset = function () {
+        this.setHeaders();
+        this.restoreColumnWidths();
+        this.syncHandleWidths();
+    };
 
     ResizableColumns.prototype.getColumnId = function($el) {
       return this.$table.data('resizable-columns-id') + '-' + $el.data('resizable-column-id');
@@ -167,10 +173,15 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         $table = $(this);
         data = $table.data('resizableColumns');
         if (!data) {
-          $table.data('resizableColumns', (data = new ResizableColumns($table, option)));
+            $table.data('resizableColumns', (data = new ResizableColumns($table, option)));
         }
+        
         if (typeof option === 'string') {
           return data[option].apply(data, args);
+        }
+
+        if (option && option.reset) {
+            data.reset();
         }
       });
     }
