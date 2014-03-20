@@ -18,7 +18,7 @@
 
     defaults:
       store: window.store
-      rigidSizing: false # when resizing a column, keep all other columns still
+      syncHandlers: false # immediately synchronize handlers with column widths
       resizeFromBody: true # allows for resizing of columns from within tbody
 
     constructor: ($table, options) ->
@@ -64,7 +64,6 @@
       @$handleContainer.on 'mousedown touchstart', '.rc-handle', @pointerdown
 
     syncHandleWidths: ->
-      @setHeaders()
       @$handleContainer.width(@$table.width()).find('.rc-handle').each (_, el) =>
         $el = $(el)
         $el.css
@@ -110,6 +109,8 @@
         difference = (pointerX(e) - startPosition) / @$table.width() * 100
         setWidth($rightColumn[0], widths.right - difference)
         setWidth($leftColumn[0], widths.left + difference)
+        if @options.syncHandlers?
+          @syncHandleWidths()
 
       $(document).one 'mouseup touchend', =>
         $(document).off 'mousemove.rc touchmove.rc'
