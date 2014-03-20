@@ -18,7 +18,6 @@
 
     defaults:
       store: window.store
-      rigidSizing: false # when resizing a column, keep all other columns still
       resizeFromBody: true # allows for resizing of columns from within tbody
 
     constructor: ($table, options) ->

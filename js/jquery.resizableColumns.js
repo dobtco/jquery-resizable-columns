@@ -19,7 +19,6 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   ResizableColumns = (function() {
     ResizableColumns.prototype.defaults = {
       store: window.store,
-      rigidSizing: false,
       resizeFromBody: true
     };
 
