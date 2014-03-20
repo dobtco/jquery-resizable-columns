@@ -81,7 +81,6 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
 
     ResizableColumns.prototype.syncHandleWidths = function() {
       var _this = this;
-      this.setHeaders();
       return this.$handleContainer.width(this.$table.width()).find('.rc-handle').each(function(_, el) {
         var $el;
         $el = $(el);

@@ -63,7 +63,6 @@
       @$handleContainer.on 'mousedown touchstart', '.rc-handle', @pointerdown
 
     syncHandleWidths: ->
-      @setHeaders()
       @$handleContainer.width(@$table.width()).find('.rc-handle').each (_, el) =>
         $el = $(el)
         $el.css
