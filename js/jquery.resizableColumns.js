@@ -19,6 +19,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   ResizableColumns = (function() {
     ResizableColumns.prototype.defaults = {
       store: window.store,
+      syncHandlers: true,
       resizeFromBody: true
     };
 
@@ -142,6 +143,8 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         var difference;
         difference = (pointerX(e) - startPosition) / _this.$table.width() * 100;
         setWidth($rightColumn[0], widths.right - difference);
+        if (_this.options.syncHandlers)
+          _this.syncHandleWidths();
         return setWidth($leftColumn[0], widths.left + difference);
       });
       return $(document).one('mouseup touchend', function() {

@@ -18,6 +18,7 @@
 
     defaults:
       store: window.store
+      syncHandlers: false # immediately synchronize handlers with column widths
       resizeFromBody: true # allows for resizing of columns from within tbody
 
     constructor: ($table, options) ->
@@ -108,6 +109,8 @@
         difference = (pointerX(e) - startPosition) / @$table.width() * 100
         setWidth($rightColumn[0], widths.right - difference)
         setWidth($leftColumn[0], widths.left + difference)
+        if @options.syncHandlers?
+          @syncHandleWidths()
 
       $(document).one 'mouseup touchend', =>
         $(document).off 'mousemove.rc touchmove.rc'
