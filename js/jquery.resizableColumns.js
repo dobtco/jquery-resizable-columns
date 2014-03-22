@@ -138,6 +138,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         left: parseWidth($leftColumn[0]),
         right: parseWidth($rightColumn[0])
       };
+      this.$handleContainer.addClass('rc-table-resizing');
       this.$table.addClass('rc-table-resizing');
       $(document).on('mousemove.rc touchmove.rc', function(e) {
         var difference;
@@ -149,6 +150,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       });
       return $(document).one('mouseup touchend', function() {
         $(document).off('mousemove.rc touchmove.rc');
+        _this.$handleContainer.removeClass('rc-table-resizing');
         _this.$table.removeClass('rc-table-resizing');
         _this.syncHandleWidths();
         return _this.saveColumnWidths();
