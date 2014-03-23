@@ -103,6 +103,7 @@
         left: parseWidth($leftColumn[0])
         right: parseWidth($rightColumn[0])
 
+      @$handleContainer.addClass('rc-table-resizing')
       @$table.addClass('rc-table-resizing')
 
       $(document).on 'mousemove.rc touchmove.rc', (e) =>
@@ -114,6 +115,7 @@
 
       $(document).one 'mouseup touchend', =>
         $(document).off 'mousemove.rc touchmove.rc'
+        @$handleContainer.removeClass('rc-table-resizing')
         @$table.removeClass('rc-table-resizing')
         @syncHandleWidths()
         @saveColumnWidths()
