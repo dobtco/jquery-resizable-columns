@@ -1,6 +1,6 @@
 {
   "name": "jquery-resizable-columns",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "Gruntfile.js",
   "dependencies": {
     "grunt": "^0.4.4",
