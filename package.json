@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "main": "Gruntfile.js",
   "dependencies": {
-    "grunt": "*",
-    "grunt-contrib-sass": "*",
-    "grunt-contrib-coffee": "*",
-    "grunt-contrib-watch": "*",
-    "grunt-contrib-uglify": "*"
+    "grunt": "^0.4.4",
+    "grunt-contrib-sass": "^0.7.3",
+    "grunt-contrib-coffee": "^0.10.1",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-contrib-uglify": "^0.4.0"
   }
 }
