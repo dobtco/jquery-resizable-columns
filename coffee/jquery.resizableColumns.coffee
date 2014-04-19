@@ -18,7 +18,7 @@
 
     defaults:
       store: window.store
-      syncHandlers: false # immediately synchronize handlers with column widths
+      syncHandlers: true # immediately synchronize handlers with column widths
       resizeFromBody: true # allows for resizing of columns from within tbody
 
     constructor: ($table, options) ->
