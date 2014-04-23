@@ -94,7 +94,12 @@
     pointerdown: (e) =>
       e.preventDefault()
 
-      startPosition = pointerX e
+      # Take into account parent frame offsets if we're inside a child document
+      ownerDocument = e.currentTarget.ownerDocument;
+      if ownerDocument != document
+          frameOffset = $((ownerDocument.defaultView or ownerDocument.parentWindow).frameElement).offset().left;
+      
+      startPosition = pointerX e + frameOffset
       $currentGrip = $(e.currentTarget)
       $leftColumn = $currentGrip.data('th')
       $rightColumn = @$tableHeaders.eq @$tableHeaders.index($leftColumn) + 1
