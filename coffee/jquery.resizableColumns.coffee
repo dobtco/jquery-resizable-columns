@@ -17,6 +17,7 @@
   class ResizableColumns
 
     defaults:
+      selector: 'tr th:visible' # determine columns using visible table headers
       store: window.store
       syncHandlers: true # immediately synchronize handlers with column widths
       resizeFromBody: true # allows for resizing of columns from within tbody
@@ -35,7 +36,7 @@
       @$table.data('resizable-columns-id') + '-' + $el.data('resizable-column-id')
 
     setHeaders: ->
-      @$tableHeaders = @$table.find('tr th:visible')
+      @$tableHeaders = @$table.find(@options.selector)
       @assignPercentageWidths()
       @createHandles()
 
