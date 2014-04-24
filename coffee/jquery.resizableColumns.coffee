@@ -36,8 +36,8 @@
         @$table.bind('column:resize:start.rc', @options.start)
       if @options.resize
         @$table.bind('column:resize.rc', @options.resize)
-      if @options.end
-        @$table.bind('column:resize:stop.rc', @options.end)
+      if @options.stop
+        @$table.bind('column:resize:stop.rc', @options.stop)
         
     getColumnId: ($el) ->
       @$table.data('resizable-columns-id') + '-' + $el.data('resizable-column-id')
