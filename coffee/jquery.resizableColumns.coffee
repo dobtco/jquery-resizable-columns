@@ -32,6 +32,19 @@
 
       $(window).on 'resize.rc', ( => @syncHandleWidths() )
 
+      # Bind event callbacks
+      if @options.start
+        @$table.bind('column:resize:start.rc', @options.start)
+      if @options.resize
+        @$table.bind('column:resize.rc', @options.resize)
+      if @options.stop
+        @$table.bind('column:resize:stop.rc', @options.stop)
+
+    triggerEvent: (type, args, original) ->
+      event = $.Event type
+      event.originalEvent = $.extend {}, original
+      @$table.trigger event, [this].concat(args || [])
+
     getColumnId: ($el) ->
       @$table.data('resizable-columns-id') + '-' + $el.data('resizable-column-id')
 
@@ -43,7 +56,7 @@
     destroy: ->
       @$handleContainer.remove()
       @$table.removeData('resizableColumns')
-      $(window).off '.rc'
+      @$table.add(window).off '.rc'
 
     assignPercentageWidths: ->
       @$tableHeaders.each (_, el) =>
@@ -108,24 +121,30 @@
       widths =
         left: parseWidth($leftColumn[0])
         right: parseWidth($rightColumn[0])
-
+      newWidths = 
+        left: widths.left
+        right: widths.right
+        
       @$handleContainer.addClass('rc-table-resizing')
       @$table.addClass('rc-table-resizing')
-
+      @triggerEvent 'column:resize:start', [ $leftColumn, $rightColumn ], e
+      
       $(document).on 'mousemove.rc touchmove.rc', (e) =>
         difference = (pointerX(e) - startPosition) / @$table.width() * 100
-        setWidth($rightColumn[0], widths.right - difference)
-        setWidth($leftColumn[0], widths.left + difference)
+        setWidth($leftColumn[0], newWidths.left = widths.left + difference)
+        setWidth($rightColumn[0], newWidths.right = widths.right - difference)
         if @options.syncHandlers?
           @syncHandleWidths()
-
+        @triggerEvent 'column:resize', [ $currentGrip, $leftColumn, $rightColumn, newWidths.left, newWidths.right ], e
+        
       $(document).one 'mouseup touchend', =>
         $(document).off 'mousemove.rc touchmove.rc'
         @$handleContainer.removeClass('rc-table-resizing')
         @$table.removeClass('rc-table-resizing')
         @syncHandleWidths()
         @saveColumnWidths()
-
+        @triggerEvent 'column:resize:stop', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ], e
+        
   # Define the plugin
   $.fn.extend resizableColumns: (option, args...) ->
     @each ->
