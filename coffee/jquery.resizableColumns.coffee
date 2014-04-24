@@ -55,7 +55,7 @@
     destroy: ->
       @$handleContainer.remove()
       @$table.removeData('resizableColumns')
-      $(window).off '.rc'
+      @$table.add(window).off '.rc'
 
     assignPercentageWidths: ->
       @$tableHeaders.each (_, el) =>
