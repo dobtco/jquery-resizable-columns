@@ -120,8 +120,8 @@
       
       $(document).on 'mousemove.rc touchmove.rc', (e) =>
         difference = (pointerX(e) - startPosition) / @$table.width() * 100
-        setWidth($rightColumn[0], newWidths.left = widths.right - difference)
-        setWidth($leftColumn[0], newWidths.right = widths.left + difference)
+        setWidth($leftColumn[0], newWidths.left = widths.left + difference)
+        setWidth($rightColumn[0], newWidths.right = widths.right - difference)
         if @options.syncHandlers?
           @syncHandleWidths()
         @$table.trigger 'column:resize', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ]
