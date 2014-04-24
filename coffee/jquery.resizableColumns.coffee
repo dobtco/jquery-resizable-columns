@@ -31,6 +31,14 @@
 
       $(window).on 'resize.rc', ( => @syncHandleWidths() )
 
+      # Bind event callbacks
+      if @options.start
+        @$table.bind('column:resize:start.rc', @options.start)
+      if @options.resize
+        @$table.bind('column:resize.rc', @options.resize)
+      if @options.end
+        @$table.bind('column:resize:end.rc', @options.end)
+        
     getColumnId: ($el) ->
       @$table.data('resizable-columns-id') + '-' + $el.data('resizable-column-id')
 
@@ -102,23 +110,29 @@
       widths =
         left: parseWidth($leftColumn[0])
         right: parseWidth($rightColumn[0])
-
+      newWidths = 
+        left: widths.left
+        right: widths.right
+        
       @$handleContainer.addClass('rc-table-resizing')
       @$table.addClass('rc-table-resizing')
-
+      @$table.trigger 'column:resize:start', [ $leftColumn, $rightColumn ]
+      
       $(document).on 'mousemove.rc touchmove.rc', (e) =>
         difference = (pointerX(e) - startPosition) / @$table.width() * 100
-        setWidth($rightColumn[0], widths.right - difference)
-        setWidth($leftColumn[0], widths.left + difference)
+        setWidth($rightColumn[0], newWidths.left = widths.right - difference)
+        setWidth($leftColumn[0], newWidths.right = widths.left + difference)
         if @options.syncHandlers?
           @syncHandleWidths()
-
+        @$table.trigger 'column:resize', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ]
+        
       $(document).one 'mouseup touchend', =>
         $(document).off 'mousemove.rc touchmove.rc'
         @$handleContainer.removeClass('rc-table-resizing')
         @$table.removeClass('rc-table-resizing')
         @syncHandleWidths()
         @saveColumnWidths()
+        @$table.trigger 'column:resize:stop', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ]
 
   # Define the plugin
   $.fn.extend resizableColumns: (option, args...) ->
