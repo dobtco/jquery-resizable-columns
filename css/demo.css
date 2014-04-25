@@ -4,10 +4,11 @@ img.ribbon {
   top: 0;
   right: 0;
   border: 0;
-  cursor: pointer; }
-
+  cursor: pointer;
+}
 .container {
-  margin-top: 60px; }
-
+  margin-top: 60px;
+}
 #username-column {
-  width: 50px; }
+  width: 50px;
+}
