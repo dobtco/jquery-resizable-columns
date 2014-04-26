@@ -110,8 +110,8 @@
 
       # Take into account parent frame offsets if we're inside a child document
       ownerDocument = e.currentTarget.ownerDocument;
-      if ownerDocument != document
-          frameOffset = $((ownerDocument.defaultView or ownerDocument.parentWindow).frameElement).offset().left;
+      frameOffset = if ownerDocument is document then 0 else  
+        $((ownerDocument.defaultView or ownerDocument.parentWindow).frameElement).offset().left
       
       startPosition = pointerX(e) + frameOffset
       $currentGrip = $(e.currentTarget)

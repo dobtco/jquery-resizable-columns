@@ -154,9 +154,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       var $currentGrip, $leftColumn, $rightColumn, frameOffset, newWidths, ownerDocument, startPosition, widths;
       e.preventDefault();
       ownerDocument = e.currentTarget.ownerDocument;
-      if (ownerDocument !== document) {
-        frameOffset = $((ownerDocument.defaultView || ownerDocument.parentWindow).frameElement).offset().left;
-      }
+      frameOffset = ownerDocument === document ? 0 : $((ownerDocument.defaultView || ownerDocument.parentWindow).frameElement).offset().left;
       startPosition = pointerX(e) + frameOffset;
       $currentGrip = $(e.currentTarget);
       $leftColumn = $currentGrip.data('th');
