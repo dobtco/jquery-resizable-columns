@@ -2,19 +2,24 @@
 <head>
   <title>jQuery Resizable Columns</title>
   <meta name="description" content="">
-  <link rel="stylesheet" href="vendor/bootstrap/dist/css/bootstrap.css">
-  <link rel="stylesheet" href="css/jquery.resizableColumns.css">
-  <link rel="stylesheet" href="css/demo.css">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="dist/jquery.resizableColumns.css">
+  <link rel="stylesheet" href="demo/demo.css">
 </head>
 <body>
-  <a href="https://github.com/dobtco/jquery-resizable-columns">
-    <img class="ribbon" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub">
+  <a href="//github.com/dobtco/jquery-resizable-columns">
+    <img class="ribbon" src="//s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub">
   </a>
 
   <div class="container">
-    <h4>jQuery Resizable Columns Demo</h4>
+    <div class="page-header">
+    	<h1>
+    		jQuery Resizable Columns
+    		<small>Demo</small>
+    	</h1>
+	</div>
 
-    <blockquote><em>Grab the column headers and drag em! <strong>Bonus: refresh the page.</strong></em></blockquote>
+    <blockquote><em>Grab the column borders and drag em'! <strong>Bonus: refresh the page.</strong></em></blockquote>
 
     <table class="table table-bordered" data-resizable-columns-id="demo-table-v2">
       <thead>
@@ -47,45 +52,50 @@
     </table>
 
     <pre>
-      &lt;script src="libs/jquery.js"&gt;&lt;/script&gt;
-      &lt;script src="libs/store.js"&gt;&lt;/script&gt;
-      &lt;script src="jquery.resizableColumns.js"&gt;&lt;/script&gt;
+&lt;script src="/path/to/jquery.js"&gt;&lt;/script&gt;
+&lt;script src="/path/to/store.js"&gt;&lt;/script&gt;
+&lt;script src="/path/to/jquery.resizableColumns.js"&gt;&lt;/script&gt;
 
-      &lt;table class="table table-bordered" data-resizable-columns-id="demo-table"&gt;
-        &lt;thead&gt;
-          &lt;tr&gt;
-            &lt;th data-resizable-column-id="#"&gt;#&lt;/th&gt;
-            &lt;th data-resizable-column-id="first_name"&gt;First Name&lt;/th&gt;
-            &lt;th data-resizable-column-id="last_name"&gt;Last Name&lt;/th&gt;
-            &lt;th data-resizable-column-id="username" data-noresize&gt;Username&lt;/th&gt;
-          &lt;/tr&gt;
-        &lt;/thead&gt;
-        &lt;tbody&gt;
-          ...
-        &lt;/tbody&gt;
-      &lt;/table&gt;
+&lt;table class="table table-bordered" data-resizable-columns-id="demo-table"&gt;
+&lt;thead&gt;
+  &lt;tr&gt;
+    &lt;th data-resizable-column-id="#"&gt;#&lt;/th&gt;
+    &lt;th data-resizable-column-id="first_name"&gt;First Name&lt;/th&gt;
+    &lt;th data-resizable-column-id="last_name"&gt;Last Name&lt;/th&gt;
+    &lt;th data-resizable-column-id="username" data-noresize&gt;Username&lt;/th&gt;
+  &lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+  ...
+&lt;/tbody&gt;
+&lt;/table&gt;
 
-      &lt;script&gt;
-        $(function(){
-          $("table").resizableColumns({
-            store: store
-          });
-        });
-      &lt;/script&gt;
-    </pre>
-
+&lt;script&gt;
+$(function(){
+  $("table").resizableColumns({
+    store: window.store
+  });
+});
+&lt;/script&gt;</pre>
   </div>
 
-  <script src="vendor/jquery/dist/jquery.js"></script>
-  <script src="libs/store.js"></script>
+  <!-- jQuery -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+  <!-- Optional localStorage dependancy, for persistent column width storage -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/store.js/1.3.14/store.min.js"></script>
+
+  <!-- Plugin -->
   <script src="dist/jquery.resizableColumns.min.js"></script>
   <script>
     $(function(){
       $("table").resizableColumns({
-        store: store
+        store: window.store
       });
     });
   </script>
+
+  <!-- Analytics -->
   <script type="text/javascript">
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -97,3 +107,4 @@
   </script>
 </body>
 </html>
+

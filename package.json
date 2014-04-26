@@ -1,12 +1,39 @@
 {
   "name": "jquery-resizable-columns",
-  "version": "0.0.2",
-  "main": "Gruntfile.js",
-  "dependencies": {
+  "title": "jQuery Resizable Columns",
+  "description": "Resizable table columns for jQuery",
+  "version": "0.1.0",
+  "author": "Adam Becker <ad@mbecker.cc> (http://ada.mbecker.cc)",
+  "homepage": "http://dobtco.github.io/jquery-resizable-columns/",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dobtco/jquery-resizable-columns.git"
+  },
+  "bugs": {
+    "url": "http://github.com/dobtco/jquery-resizable-columns/issues"
+  },
+  "keywords": [
+    "jquery",
+    "resizable-columns-table",
+    "resizable-columns",
+    "html",
+    "table resize",
+    "resizable columns",
+    "resizable",
+    "adam becker"
+  ],
+  "main": "dist/jquery.resizableColumns.js",
+  "devDependencies": {
     "grunt": "latest",
-    "grunt-contrib-less": "latest",
+    "grunt-banner": "^0.2.2",
     "grunt-contrib-coffee": "latest",
-    "grunt-contrib-watch": "latest",
-    "grunt-contrib-uglify": "latest"
+    "grunt-contrib-less": "latest",
+    "grunt-contrib-uglify": "latest",
+    "grunt-contrib-watch": "latest"
+  },
+  "scripts": {
+    "build": "npm install && grunt",
+    "start": "grunt"
   }
 }
