@@ -108,11 +108,7 @@
     pointerdown: (e) =>
       e.preventDefault()
 
-      # Take into account parent frame offsets if we're inside a child document
-      ownerDocument = e.currentTarget.ownerDocument;
-      frameOffset = if ownerDocument is document then 0 else  
-        $((ownerDocument.defaultView or ownerDocument.parentWindow).frameElement).offset().left
-      
+      $ownerDocument = $(e.currentTarget.ownerDocument);
       startPosition = pointerX(e) + frameOffset
       $currentGrip = $(e.currentTarget)
       $leftColumn = $currentGrip.data('th')
@@ -127,20 +123,22 @@
         
       @$handleContainer.addClass('rc-table-resizing')
       @$table.addClass('rc-table-resizing')
-      @triggerEvent 'column:resize:start', [ $leftColumn, $rightColumn ], e
+      $currentGrip.addClass('rc-column-resizing')
+      @triggerEvent 'column:resize:start', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right  ], e
       
-      $(document).on 'mousemove.rc touchmove.rc', (e) =>
+      $ownerDocument.on 'mousemove.rc touchmove.rc', (e) =>
         difference = (pointerX(e) - startPosition) / @$table.width() * 100
         setWidth($leftColumn[0], newWidths.left = widths.left + difference)
         setWidth($rightColumn[0], newWidths.right = widths.right - difference)
         if @options.syncHandlers?
           @syncHandleWidths()
-        @triggerEvent 'column:resize', [ $currentGrip, $leftColumn, $rightColumn, newWidths.left, newWidths.right ], e
+        @triggerEvent 'column:resize', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ], e
         
-      $(document).one 'mouseup touchend', =>
-        $(document).off 'mousemove.rc touchmove.rc'
+      $ownerDocument.one 'mouseup touchend', =>
+        $ownerDocument.off 'mousemove.rc touchmove.rc'
         @$handleContainer.removeClass('rc-table-resizing')
         @$table.removeClass('rc-table-resizing')
+        $currentGrip.removeClass('rc-column-resizing')
         @syncHandleWidths()
         @saveColumnWidths()
         @triggerEvent 'column:resize:stop', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ], e

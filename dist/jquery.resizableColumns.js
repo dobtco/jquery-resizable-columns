@@ -1,4 +1,4 @@
-/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Sat Apr 26 2014 12:17:32 */
+/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Wed Apr 30 2014 13:37:53 */
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
 
@@ -152,10 +152,9 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     };
 
     ResizableColumns.prototype.pointerdown = function(e) {
-      var $currentGrip, $leftColumn, $rightColumn, frameOffset, newWidths, ownerDocument, startPosition, widths;
+      var $currentGrip, $leftColumn, $ownerDocument, $rightColumn, newWidths, startPosition, widths;
       e.preventDefault();
-      ownerDocument = e.currentTarget.ownerDocument;
-      frameOffset = ownerDocument === document ? 0 : $((ownerDocument.defaultView || ownerDocument.parentWindow).frameElement).offset().left;
+      $ownerDocument = $(e.currentTarget.ownerDocument);
       startPosition = pointerX(e) + frameOffset;
       $currentGrip = $(e.currentTarget);
       $leftColumn = $currentGrip.data('th');
@@ -170,8 +169,9 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       };
       this.$handleContainer.addClass('rc-table-resizing');
       this.$table.addClass('rc-table-resizing');
-      this.triggerEvent('column:resize:start', [$leftColumn, $rightColumn], e);
-      $(document).on('mousemove.rc touchmove.rc', (function(_this) {
+      $currentGrip.addClass('rc-column-resizing');
+      this.triggerEvent('column:resize:start', [$leftColumn, $rightColumn, newWidths.left, newWidths.right], e);
+      $ownerDocument.on('mousemove.rc touchmove.rc', (function(_this) {
         return function(e) {
           var difference;
           difference = (pointerX(e) - startPosition) / _this.$table.width() * 100;
@@ -180,14 +180,15 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
           if (_this.options.syncHandlers != null) {
             _this.syncHandleWidths();
           }
-          return _this.triggerEvent('column:resize', [$currentGrip, $leftColumn, $rightColumn, newWidths.left, newWidths.right], e);
+          return _this.triggerEvent('column:resize', [$leftColumn, $rightColumn, newWidths.left, newWidths.right], e);
         };
       })(this));
-      return $(document).one('mouseup touchend', (function(_this) {
+      return $ownerDocument.one('mouseup touchend', (function(_this) {
         return function() {
-          $(document).off('mousemove.rc touchmove.rc');
+          $ownerDocument.off('mousemove.rc touchmove.rc');
           _this.$handleContainer.removeClass('rc-table-resizing');
           _this.$table.removeClass('rc-table-resizing');
+          $currentGrip.removeClass('rc-column-resizing');
           _this.syncHandleWidths();
           _this.saveColumnWidths();
           return _this.triggerEvent('column:resize:stop', [$leftColumn, $rightColumn, newWidths.left, newWidths.right], e);
