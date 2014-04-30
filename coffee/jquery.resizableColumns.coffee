@@ -22,6 +22,9 @@
       syncHandlers: true # immediately synchronize handlers with column widths
       resizeFromBody: true # allows for resizing of columns from within tbody
 
+      maxWidth: null # Maximum `percentage` width to allow for any column
+      minWidth: null # Minimum `percentage` width to allow for any column
+
     constructor: ($table, options) ->
       @options = $.extend({}, @defaults, options)
       @$table = $table
@@ -105,11 +108,20 @@
 
       total
 
+    constrainWidth: (width) =>
+      if @options.minWidth?
+        width = Math.max(@options.minWidth, width)
+
+      if @options.maxWidth?
+        width = Math.min(@options.maxWidth, width)
+
+      width
+
     pointerdown: (e) =>
       e.preventDefault()
 
       $ownerDocument = $(e.currentTarget.ownerDocument);
-      startPosition = pointerX(e) + frameOffset
+      startPosition = pointerX(e)
       $currentGrip = $(e.currentTarget)
       $leftColumn = $currentGrip.data('th')
       $rightColumn = @$tableHeaders.eq @$tableHeaders.index($leftColumn) + 1
@@ -128,8 +140,8 @@
       
       $ownerDocument.on 'mousemove.rc touchmove.rc', (e) =>
         difference = (pointerX(e) - startPosition) / @$table.width() * 100
-        setWidth($leftColumn[0], newWidths.left = widths.left + difference)
-        setWidth($rightColumn[0], newWidths.right = widths.right - difference)
+        setWidth $leftColumn[0], @constrainWidth newWidths.left = widths.left + difference
+        setWidth $rightColumn[0], @constrainWidth newWidths.right = widths.right - difference
         if @options.syncHandlers?
           @syncHandleWidths()
         @triggerEvent 'column:resize', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ], e

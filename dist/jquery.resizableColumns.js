@@ -1,4 +1,4 @@
-/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Wed Apr 30 2014 13:37:53 */
+/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Wed Apr 30 2014 14:07:21 */
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
 
@@ -22,11 +22,14 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       selector: 'tr th:visible',
       store: window.store,
       syncHandlers: true,
-      resizeFromBody: true
+      resizeFromBody: true,
+      maxWidth: null,
+      minWidth: null
     };
 
     function ResizableColumns($table, options) {
       this.pointerdown = __bind(this.pointerdown, this);
+      this.constrainWidth = __bind(this.constrainWidth, this);
       this.options = $.extend({}, this.defaults, options);
       this.$table = $table;
       this.setHeaders();
@@ -151,11 +154,21 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       return total;
     };
 
+    ResizableColumns.prototype.constrainWidth = function(width) {
+      if (this.options.minWidth != null) {
+        width = Math.max(this.options.minWidth, width);
+      }
+      if (this.options.maxWidth != null) {
+        width = Math.min(this.options.maxWidth, width);
+      }
+      return width;
+    };
+
     ResizableColumns.prototype.pointerdown = function(e) {
       var $currentGrip, $leftColumn, $ownerDocument, $rightColumn, newWidths, startPosition, widths;
       e.preventDefault();
       $ownerDocument = $(e.currentTarget.ownerDocument);
-      startPosition = pointerX(e) + frameOffset;
+      startPosition = pointerX(e);
       $currentGrip = $(e.currentTarget);
       $leftColumn = $currentGrip.data('th');
       $rightColumn = this.$tableHeaders.eq(this.$tableHeaders.index($leftColumn) + 1);
@@ -175,8 +188,8 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         return function(e) {
           var difference;
           difference = (pointerX(e) - startPosition) / _this.$table.width() * 100;
-          setWidth($leftColumn[0], newWidths.left = widths.left + difference);
-          setWidth($rightColumn[0], newWidths.right = widths.right - difference);
+          setWidth($leftColumn[0], _this.constrainWidth(newWidths.left = widths.left + difference));
+          setWidth($rightColumn[0], _this.constrainWidth(newWidths.right = widths.right - difference));
           if (_this.options.syncHandlers != null) {
             _this.syncHandleWidths();
           }
