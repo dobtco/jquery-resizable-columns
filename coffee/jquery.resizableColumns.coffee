@@ -140,8 +140,8 @@
       
       $ownerDocument.on 'mousemove.rc touchmove.rc', (e) =>
         difference = (pointerX(e) - startPosition) / @$table.width() * 100
-        setWidth $leftColumn[0], @constrainWidth newWidths.left = widths.left + difference
-        setWidth $rightColumn[0], @constrainWidth newWidths.right = widths.right - difference
+        setWidth $leftColumn[0], newWidths.left = @constrainWidth widths.left + difference
+        setWidth $rightColumn[0], newWidths.right = @constrainWidth widths.right - difference
         if @options.syncHandlers?
           @syncHandleWidths()
         @triggerEvent 'column:resize', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ], e

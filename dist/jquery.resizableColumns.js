@@ -1,4 +1,4 @@
-/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Wed Apr 30 2014 14:12:50 */
+/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Wed Apr 30 2014 14:24:25 */
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
 
@@ -187,8 +187,8 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         return function(e) {
           var difference;
           difference = (pointerX(e) - startPosition) / _this.$table.width() * 100;
-          setWidth($leftColumn[0], _this.constrainWidth(newWidths.left = widths.left + difference));
-          setWidth($rightColumn[0], _this.constrainWidth(newWidths.right = widths.right - difference));
+          setWidth($leftColumn[0], newWidths.left = _this.constrainWidth(widths.left + difference));
+          setWidth($rightColumn[0], newWidths.right = _this.constrainWidth(widths.right - difference));
           if (_this.options.syncHandlers != null) {
             _this.syncHandleWidths();
           }
