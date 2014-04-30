@@ -1,4 +1,4 @@
-/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Wed Apr 30 2014 14:07:21 */
+/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Wed Apr 30 2014 14:12:50 */
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
 
@@ -180,9 +180,8 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         left: widths.left,
         right: widths.right
       };
-      this.$handleContainer.addClass('rc-table-resizing');
-      this.$table.addClass('rc-table-resizing');
-      $currentGrip.addClass('rc-column-resizing');
+      this.$handleContainer.add(this.$table).addClass('rc-table-resizing');
+      $leftColumn.add($rightColumn).add($currentGrip).addClass('rc-column-resizing');
       this.triggerEvent('column:resize:start', [$leftColumn, $rightColumn, newWidths.left, newWidths.right], e);
       $ownerDocument.on('mousemove.rc touchmove.rc', (function(_this) {
         return function(e) {
@@ -199,9 +198,8 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       return $ownerDocument.one('mouseup touchend', (function(_this) {
         return function() {
           $ownerDocument.off('mousemove.rc touchmove.rc');
-          _this.$handleContainer.removeClass('rc-table-resizing');
-          _this.$table.removeClass('rc-table-resizing');
-          $currentGrip.removeClass('rc-column-resizing');
+          _this.$handleContainer.add(_this.$table).removeClass('rc-table-resizing');
+          $leftColumn.add($rightColumn).add($currentGrip).removeClass('rc-column-resizing');
           _this.syncHandleWidths();
           _this.saveColumnWidths();
           return _this.triggerEvent('column:resize:stop', [$leftColumn, $rightColumn, newWidths.left, newWidths.right], e);

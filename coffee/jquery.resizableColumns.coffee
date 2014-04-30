@@ -132,10 +132,10 @@
       newWidths = 
         left: widths.left
         right: widths.right
-        
-      @$handleContainer.addClass('rc-table-resizing')
-      @$table.addClass('rc-table-resizing')
-      $currentGrip.addClass('rc-column-resizing')
+      
+      @$handleContainer.add(@$table).addClass 'rc-table-resizing'
+      $leftColumn.add($rightColumn).add($currentGrip).addClass 'rc-column-resizing'
+
       @triggerEvent 'column:resize:start', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right  ], e
       
       $ownerDocument.on 'mousemove.rc touchmove.rc', (e) =>
@@ -148,9 +148,8 @@
         
       $ownerDocument.one 'mouseup touchend', =>
         $ownerDocument.off 'mousemove.rc touchmove.rc'
-        @$handleContainer.removeClass('rc-table-resizing')
-        @$table.removeClass('rc-table-resizing')
-        $currentGrip.removeClass('rc-column-resizing')
+        @$handleContainer.add(@$table).removeClass 'rc-table-resizing' 
+        $leftColumn.add($rightColumn).add($currentGrip).removeClass 'rc-column-resizing'
         @syncHandleWidths()
         @saveColumnWidths()
         @triggerEvent 'column:resize:stop', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ], e
