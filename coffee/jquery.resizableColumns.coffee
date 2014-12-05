@@ -136,6 +136,9 @@
       if @options.maxWidth? or @options.obeyCssMaxWidth
         width = Math.min($el.data('cssMaxWidth'), @options.maxWidth, width)
 
+      width = Math.max(0, width);
+      width = Math.min(100, width);
+
       width
 
     pointerdown: (e) =>
