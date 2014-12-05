@@ -25,6 +25,9 @@
       maxWidth: null # Maximum `percentage` width to allow for any column
       minWidth: null # Minimum `percentage` width to allow for any column
 
+      obeyCssMinWidth: false
+      obeyCssMaxWidth: false
+
     constructor: ($table, options) ->
       @options = $.extend({}, @defaults, options)
       @$table = $table
@@ -64,7 +67,25 @@
     assignPercentageWidths: ->
       @$tableHeaders.each (_, el) =>
         $el = $(el)
-        setWidth $el[0], ($el.outerWidth() / @$table.width() * 100)
+
+        width = ($el.outerWidth() / @$table.width() * 100)
+
+        $el.data('cssMinWidth', 0)
+        $el.data('cssMaxWidth', 100)
+
+        if @options.obeyCssMinWidth
+          minwidth = parseFloat(el.style.minWidth)
+          if !isNaN(minwidth)
+            $el.data('cssMinWidth', minwidth)
+            width = Math.max(minwidth, width)
+
+        if @options.obeyCssMaxWidth
+          maxwidth = parseFloat(el.style.maxWidth)
+          if !isNaN(maxwidth)
+            $el.data('cssMaxWidth', maxwidth)
+            width = Math.min(maxwidth, width)
+
+        setWidth $el[0], width
 
     createHandles: ->
       @$handleContainer?.remove()
@@ -108,12 +129,15 @@
 
       total
 
-    constrainWidth: (width) =>
-      if @options.minWidth?
-        width = Math.max(@options.minWidth, width)
+    constrainWidth: ($el, width) =>
+      if @options.minWidth? or @options.obeyCssMinWidth
+        width = Math.max($el.data('cssMinWidth'), @options.minWidth, width)
 
-      if @options.maxWidth?
-        width = Math.min(@options.maxWidth, width)
+      if @options.maxWidth? or @options.obeyCssMaxWidth
+        width = Math.min($el.data('cssMaxWidth'), @options.maxWidth, width)
+
+      width = Math.max(0, width);
+      width = Math.min(100, width);
 
       width
 
@@ -129,31 +153,36 @@
       widths =
         left: parseWidth($leftColumn[0])
         right: parseWidth($rightColumn[0])
-      newWidths = 
+      newWidths =
         left: widths.left
         right: widths.right
-      
+
       @$handleContainer.add(@$table).addClass 'rc-table-resizing'
       $leftColumn.add($rightColumn).add($currentGrip).addClass 'rc-column-resizing'
 
       @triggerEvent 'column:resize:start', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right  ], e
-      
+
       $ownerDocument.on 'mousemove.rc touchmove.rc', (e) =>
         difference = (pointerX(e) - startPosition) / @$table.width() * 100
-        setWidth $leftColumn[0], newWidths.left = @constrainWidth widths.left + difference
-        setWidth $rightColumn[0], newWidths.right = @constrainWidth widths.right - difference
+        if difference > 0
+          setWidth $rightColumn[0], newWidths.right = @constrainWidth($rightColumn, widths.right - difference)
+          setWidth $leftColumn[0], newWidths.left = @constrainWidth($leftColumn, widths.left + (widths.right - newWidths.right))
+        if difference < 0
+          setWidth $leftColumn[0], newWidths.left = @constrainWidth($leftColumn, widths.left + difference)
+          setWidth $rightColumn[0], newWidths.right = @constrainWidth($rightColumn, widths.right + (widths.left - newWidths.left))
+
         if @options.syncHandlers?
           @syncHandleWidths()
         @triggerEvent 'column:resize', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ], e
-        
+
       $ownerDocument.one 'mouseup touchend', =>
         $ownerDocument.off 'mousemove.rc touchmove.rc'
-        @$handleContainer.add(@$table).removeClass 'rc-table-resizing' 
+        @$handleContainer.add(@$table).removeClass 'rc-table-resizing'
         $leftColumn.add($rightColumn).add($currentGrip).removeClass 'rc-column-resizing'
         @syncHandleWidths()
         @saveColumnWidths()
         @triggerEvent 'column:resize:stop', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ], e
-        
+
   # Define the plugin
   $.fn.extend resizableColumns: (option, args...) ->
     @each ->

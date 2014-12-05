@@ -1,4 +1,4 @@
-/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Wed Apr 30 2014 14:24:25 */
+/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Fri Dec 05 2014 14:58:44 */
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
 
@@ -24,7 +24,9 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       syncHandlers: true,
       resizeFromBody: true,
       maxWidth: null,
-      minWidth: null
+      minWidth: null,
+      obeyCssMinWidth: false,
+      obeyCssMaxWidth: false
     };
 
     function ResizableColumns($table, options) {
@@ -77,9 +79,26 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     ResizableColumns.prototype.assignPercentageWidths = function() {
       return this.$tableHeaders.each((function(_this) {
         return function(_, el) {
-          var $el;
+          var $el, maxwidth, minwidth, width;
           $el = $(el);
-          return setWidth($el[0], $el.outerWidth() / _this.$table.width() * 100);
+          width = $el.outerWidth() / _this.$table.width() * 100;
+          $el.data('cssMinWidth', 0);
+          $el.data('cssMaxWidth', 100);
+          if (_this.options.obeyCssMinWidth) {
+            minwidth = parseFloat(el.style.minWidth);
+            if (!isNaN(minwidth)) {
+              $el.data('cssMinWidth', minwidth);
+              width = Math.max(minwidth, width);
+            }
+          }
+          if (_this.options.obeyCssMaxWidth) {
+            maxwidth = parseFloat(el.style.maxWidth);
+            if (!isNaN(maxwidth)) {
+              $el.data('cssMaxWidth', maxwidth);
+              width = Math.min(maxwidth, width);
+            }
+          }
+          return setWidth($el[0], width);
         };
       })(this));
     };
@@ -154,13 +173,15 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       return total;
     };
 
-    ResizableColumns.prototype.constrainWidth = function(width) {
-      if (this.options.minWidth != null) {
-        width = Math.max(this.options.minWidth, width);
+    ResizableColumns.prototype.constrainWidth = function($el, width) {
+      if ((this.options.minWidth != null) || this.options.obeyCssMinWidth) {
+        width = Math.max($el.data('cssMinWidth'), this.options.minWidth, width);
       }
-      if (this.options.maxWidth != null) {
-        width = Math.min(this.options.maxWidth, width);
+      if ((this.options.maxWidth != null) || this.options.obeyCssMaxWidth) {
+        width = Math.min($el.data('cssMaxWidth'), this.options.maxWidth, width);
       }
+      width = Math.max(0, width);
+      width = Math.min(100, width);
       return width;
     };
 
@@ -187,8 +208,14 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         return function(e) {
           var difference;
           difference = (pointerX(e) - startPosition) / _this.$table.width() * 100;
-          setWidth($leftColumn[0], newWidths.left = _this.constrainWidth(widths.left + difference));
-          setWidth($rightColumn[0], newWidths.right = _this.constrainWidth(widths.right - difference));
+          if (difference > 0) {
+            setWidth($rightColumn[0], newWidths.right = _this.constrainWidth($rightColumn, widths.right - difference));
+            setWidth($leftColumn[0], newWidths.left = _this.constrainWidth($leftColumn, widths.left + (widths.right - newWidths.right)));
+          }
+          if (difference < 0) {
+            setWidth($leftColumn[0], newWidths.left = _this.constrainWidth($leftColumn, widths.left + difference));
+            setWidth($rightColumn[0], newWidths.right = _this.constrainWidth($rightColumn, widths.right + (widths.left - newWidths.left)));
+          }
           if (_this.options.syncHandlers != null) {
             _this.syncHandleWidths();
           }
