@@ -5,6 +5,7 @@
 
   setWidth = (node, width) ->
     width = width.toFixed(2)
+    width = if width > 0 then width else 0
     node.style.width = "#{width}%"
 
   pointerX = (e) ->
