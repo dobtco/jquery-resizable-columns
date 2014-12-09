@@ -68,6 +68,9 @@
       @$tableHeaders.each (_, el) =>
         $el = $(el)
 
+        if ($el.attr('data-noresize')?)
+          return;
+
         width = ($el.outerWidth() / @$table.width() * 100)
 
         $el.data('cssMinWidth', 0)
