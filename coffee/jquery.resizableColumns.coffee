@@ -76,19 +76,55 @@
         $el.data('cssMinWidth', 0)
         $el.data('cssMaxWidth', 100)
 
-        if @options.obeyCssMinWidth
-          minwidth = parseFloat(el.style.minWidth)
-          if !isNaN(minwidth)
-            $el.data('cssMinWidth', minwidth)
-            width = Math.max(minwidth, width)
+        calcedCssMinWidth = @calcCssMinWidth($el)
+        if calcedCssMinWidth?
+          width = Math.max(calcedCssMinWidth, width)
 
-        if @options.obeyCssMaxWidth
-          maxwidth = parseFloat(el.style.maxWidth)
-          if !isNaN(maxwidth)
-            $el.data('cssMaxWidth', maxwidth)
-            width = Math.min(maxwidth, width)
+        calcedCssMaxWidth = @calcCssMinWidth($el)
+        if calcedCssMaxWidth?
+          width = Math.min(calcedCssMaxWidth, width)
 
         setWidth $el[0], width
+
+    calcCssMinWidth: ($el) ->
+      minwidth = null
+
+      el = $el[0]
+
+      if @options.obeyCssMinWidth
+        if (el.style.minWidth.slice(-2) == 'px')
+          # pixel
+          minwidth = (parseFloat(el.style.minWidth) / @$table.width() * 100)
+        else
+          # percent
+          minwidth = parseFloat(el.style.minWidth)
+
+        if !isNaN(minwidth)
+          $el.data('cssMinWidth', minwidth)
+        else
+          minwidth = null;
+
+      minwidth
+
+    calcCssMaxWidth: ($el) ->
+      maxwidth = null
+
+      el = $el[0]
+
+      if @options.obeyCssMaxWidth
+        if (el.style.maxWidth.slice(-2) == 'px')
+          # pixel
+          maxwidth = (parseFloat(el.style.maxWidth) / @$table.width() * 100)
+        else
+          # percent
+          maxwidth = parseFloat(el.style.maxWidth)
+
+        if !isNaN(maxwidth)
+          $el.data('cssMaxWidth', maxwidth)
+        else
+          maxwidth = null;
+
+      maxwidth
 
     createHandles: ->
       @$handleContainer?.remove()
@@ -107,6 +143,7 @@
     syncHandleWidths: ->
       @$handleContainer.width(@$table.width()).find('.rc-handle').each (_, el) =>
         $el = $(el)
+
         $el.css
           left: $el.data('th').outerWidth() + ($el.data('th').offset().left - @$handleContainer.offset().left)
           height: if @options.resizeFromBody then @$table.height() else @$table.find('thead').height()

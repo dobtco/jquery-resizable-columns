@@ -1,4 +1,4 @@
-/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Mon Dec 08 2014 20:00:59 */
+/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Wed Dec 10 2014 13:22:20 */
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
 
@@ -79,7 +79,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     ResizableColumns.prototype.assignPercentageWidths = function() {
       return this.$tableHeaders.each((function(_this) {
         return function(_, el) {
-          var $el, maxwidth, minwidth, width;
+          var $el, calcedCssMaxWidth, calcedCssMinWidth, width;
           $el = $(el);
           if (($el.attr('data-noresize') != null)) {
             return;
@@ -87,23 +87,55 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
           width = $el.outerWidth() / _this.$table.width() * 100;
           $el.data('cssMinWidth', 0);
           $el.data('cssMaxWidth', 100);
-          if (_this.options.obeyCssMinWidth) {
-            minwidth = parseFloat(el.style.minWidth);
-            if (!isNaN(minwidth)) {
-              $el.data('cssMinWidth', minwidth);
-              width = Math.max(minwidth, width);
-            }
+          calcedCssMinWidth = _this.calcCssMinWidth($el);
+          if (calcedCssMinWidth != null) {
+            width = Math.max(calcedCssMinWidth, width);
           }
-          if (_this.options.obeyCssMaxWidth) {
-            maxwidth = parseFloat(el.style.maxWidth);
-            if (!isNaN(maxwidth)) {
-              $el.data('cssMaxWidth', maxwidth);
-              width = Math.min(maxwidth, width);
-            }
+          calcedCssMaxWidth = _this.calcCssMinWidth($el);
+          if (calcedCssMaxWidth != null) {
+            width = Math.min(calcedCssMaxWidth, width);
           }
           return setWidth($el[0], width);
         };
       })(this));
+    };
+
+    ResizableColumns.prototype.calcCssMinWidth = function($el) {
+      var el, minwidth;
+      minwidth = null;
+      el = $el[0];
+      if (this.options.obeyCssMinWidth) {
+        if (el.style.minWidth.slice(-2) === 'px') {
+          minwidth = parseFloat(el.style.minWidth) / this.$table.width() * 100;
+        } else {
+          minwidth = parseFloat(el.style.minWidth);
+        }
+        if (!isNaN(minwidth)) {
+          $el.data('cssMinWidth', minwidth);
+        } else {
+          minwidth = null;
+        }
+      }
+      return minwidth;
+    };
+
+    ResizableColumns.prototype.calcCssMaxWidth = function($el) {
+      var el, maxwidth;
+      maxwidth = null;
+      el = $el[0];
+      if (this.options.obeyCssMaxWidth) {
+        if (el.style.maxWidth.slice(-2) === 'px') {
+          maxwidth = parseFloat(el.style.maxWidth) / this.$table.width() * 100;
+        } else {
+          maxwidth = parseFloat(el.style.maxWidth);
+        }
+        if (!isNaN(maxwidth)) {
+          $el.data('cssMaxWidth', maxwidth);
+        } else {
+          maxwidth = null;
+        }
+      }
+      return maxwidth;
     };
 
     ResizableColumns.prototype.createHandles = function() {
