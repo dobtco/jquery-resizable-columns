@@ -17,7 +17,7 @@
   class ResizableColumns
 
     defaults:
-      selector: 'tr th:visible' # determine columns using visible table headers
+      selector: 'thead tr:eq(0) th:visible' # determine columns using visible table headers
       store: window.store
       syncHandlers: true # immediately synchronize handlers with column widths
       resizeFromBody: true # allows for resizing of columns from within tbody
