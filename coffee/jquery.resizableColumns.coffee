@@ -18,6 +18,7 @@
 
     defaults:
       selector: 'thead tr:eq(0) th:visible' # determine columns using visible table headers
+      noResizeAttr: 'data-noresize' # attr to determine a column is not resizable
       store: window.store
       syncHandlers: true # immediately synchronize handlers with column widths
       resizeFromBody: true # allows for resizing of columns from within tbody
@@ -68,7 +69,7 @@
       @$tableHeaders.each (_, el) =>
         $el = $(el)
 
-        if ($el.attr('data-noresize')?)
+        if ($el.attr(@options.noResizeAttr)?)
           return;
 
         width = ($el.outerWidth() / @$table.width() * 100)
@@ -131,8 +132,8 @@
       @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))
       @$tableHeaders.each (i, el) =>
         return if @$tableHeaders.eq(i + 1).length == 0 ||
-                  @$tableHeaders.eq(i).attr('data-noresize')? ||
-                  @$tableHeaders.eq(i + 1).attr('data-noresize')?
+                  @$tableHeaders.eq(i).attr(@options.noResizeAttr)? ||
+                  @$tableHeaders.eq(i + 1).attr(@options.noResizeAttr)?
 
         $handle = $("<div class='rc-handle' />")
         $handle.data('th', $(el))
@@ -144,14 +145,16 @@
       @$handleContainer.width(@$table.width()).find('.rc-handle').each (_, el) =>
         $el = $(el)
 
+        $th = @$tableHeaders.filter(':not([' + @options.noResizeAttr + '])').eq(_);
+
         $el.css
-          left: $el.data('th').outerWidth() + ($el.data('th').offset().left - @$handleContainer.offset().left)
+          left: $th.outerWidth() + ($th.offset().left - @$handleContainer.offset().left)
           height: if @options.resizeFromBody then @$table.height() else @$table.find('thead').height()
 
     saveColumnWidths: ->
       @$tableHeaders.each (_, el) =>
         $el = $(el)
-        unless $el.attr('data-noresize')?
+        unless $el.attr(@options.noResizeAttr)?
           if @options.store?
             @options.store.set @getColumnId($el), parseWidth($el[0])
 
@@ -187,8 +190,9 @@
       $ownerDocument = $(e.currentTarget.ownerDocument);
       startPosition = pointerX(e)
       $currentGrip = $(e.currentTarget)
-      $leftColumn = $currentGrip.data('th')
-      $rightColumn = @$tableHeaders.eq @$tableHeaders.index($leftColumn) + 1
+      gripIndex = $currentGrip.index()
+      $leftColumn = @$tableHeaders.filter(':not([' + @options.noResizeAttr + '])').eq(gripIndex)
+      $rightColumn = @$tableHeaders.filter(':not([' + @options.noResizeAttr + '])').eq(gripIndex + 1)
 
       widths =
         left: parseWidth($leftColumn[0])

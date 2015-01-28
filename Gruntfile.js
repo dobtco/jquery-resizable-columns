@@ -17,7 +17,8 @@ module.exports = function(grunt) {
 				options: {
 					position: 'top',
 					banner: '/* <%= pkg.title %> v<%= pkg.version %> | <%= pkg.homepage %> | ' +
-						'Licensed <%= pkg.license %> | Built <%= grunt.template.today() %> */',
+						'Licensed <%= pkg.license %> | Built <%= grunt.template.today() %> */' + "\n" +
+						'/* Forked from original project @ <%= pkg.originalHomepage %> */',
 					linebreak: true
 				},
 				files: {

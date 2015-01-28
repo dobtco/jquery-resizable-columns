@@ -3,8 +3,10 @@
   "title": "jQuery Resizable Columns",
   "description": "Resizable table columns for jQuery",
   "version": "0.1.0",
-  "author": "Adam Becker <ad@mbecker.cc> (http://ada.mbecker.cc)",
-  "homepage": "http://dobtco.github.io/jquery-resizable-columns/",
+  "author": "Brad Waxler <woolyninja@woolyninja.com>",
+  "homepage": "https://github.com/woolyninja/jquery-resizable-columns",
+  "originalHomepage": "http://dobtco.github.io/jquery-resizable-columns/",
+  "originalAuthor": "Adam Becker <ad@mbecker.cc> (http://ada.mbecker.cc)",
   "license": "MIT",
   "repository": {
     "type": "git",

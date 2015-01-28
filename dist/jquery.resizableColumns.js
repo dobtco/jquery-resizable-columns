@@ -1,4 +1,5 @@
-/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Tue Dec 23 2014 10:12:41 */
+/* jQuery Resizable Columns v0.1.0 | https://github.com/woolyninja/jquery-resizable-columns | Licensed MIT | Built Wed Jan 28 2015 16:11:04 */
+/* Forked from original project @ http://dobtco.github.io/jquery-resizable-columns/ */
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
 
@@ -20,6 +21,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
   ResizableColumns = (function() {
     ResizableColumns.prototype.defaults = {
       selector: 'thead tr:eq(0) th:visible',
+      noResizeAttr: 'data-noresize',
       store: window.store,
       syncHandlers: true,
       resizeFromBody: true,
@@ -81,7 +83,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         return function(_, el) {
           var $el, calcedCssMaxWidth, calcedCssMinWidth, width;
           $el = $(el);
-          if (($el.attr('data-noresize') != null)) {
+          if (($el.attr(_this.options.noResizeAttr) != null)) {
             return;
           }
           width = $el.outerWidth() / _this.$table.width() * 100;
@@ -147,7 +149,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       this.$tableHeaders.each((function(_this) {
         return function(i, el) {
           var $handle;
-          if (_this.$tableHeaders.eq(i + 1).length === 0 || (_this.$tableHeaders.eq(i).attr('data-noresize') != null) || (_this.$tableHeaders.eq(i + 1).attr('data-noresize') != null)) {
+          if (_this.$tableHeaders.eq(i + 1).length === 0 || (_this.$tableHeaders.eq(i).attr(_this.options.noResizeAttr) != null) || (_this.$tableHeaders.eq(i + 1).attr(_this.options.noResizeAttr) != null)) {
             return;
           }
           $handle = $("<div class='rc-handle' />");
@@ -161,10 +163,11 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     ResizableColumns.prototype.syncHandleWidths = function() {
       return this.$handleContainer.width(this.$table.width()).find('.rc-handle').each((function(_this) {
         return function(_, el) {
-          var $el;
+          var $el, $th;
           $el = $(el);
+          $th = _this.$tableHeaders.filter(':not([' + _this.options.noResizeAttr + '])').eq(_);
           return $el.css({
-            left: $el.data('th').outerWidth() + ($el.data('th').offset().left - _this.$handleContainer.offset().left),
+            left: $th.outerWidth() + ($th.offset().left - _this.$handleContainer.offset().left),
             height: _this.options.resizeFromBody ? _this.$table.height() : _this.$table.find('thead').height()
           });
         };
@@ -176,7 +179,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         return function(_, el) {
           var $el;
           $el = $(el);
-          if ($el.attr('data-noresize') == null) {
+          if ($el.attr(_this.options.noResizeAttr) == null) {
             if (_this.options.store != null) {
               return _this.options.store.set(_this.getColumnId($el), parseWidth($el[0]));
             }
@@ -221,13 +224,14 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     };
 
     ResizableColumns.prototype.pointerdown = function(e) {
-      var $currentGrip, $leftColumn, $ownerDocument, $rightColumn, newWidths, startPosition, widths;
+      var $currentGrip, $leftColumn, $ownerDocument, $rightColumn, gripIndex, newWidths, startPosition, widths;
       e.preventDefault();
       $ownerDocument = $(e.currentTarget.ownerDocument);
       startPosition = pointerX(e);
       $currentGrip = $(e.currentTarget);
-      $leftColumn = $currentGrip.data('th');
-      $rightColumn = this.$tableHeaders.eq(this.$tableHeaders.index($leftColumn) + 1);
+      gripIndex = $currentGrip.index();
+      $leftColumn = this.$tableHeaders.filter(':not([' + this.options.noResizeAttr + '])').eq(gripIndex);
+      $rightColumn = this.$tableHeaders.filter(':not([' + this.options.noResizeAttr + '])').eq(gripIndex + 1);
       widths = {
         left: parseWidth($leftColumn[0]),
         right: parseWidth($rightColumn[0])
