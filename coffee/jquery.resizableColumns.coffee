@@ -32,6 +32,7 @@
     constructor: ($table, options) ->
       @options = $.extend({}, @defaults, options)
       @$table = $table
+      @lastDraggableHeaderIndex = 999;
 
       @setHeaders()
       @restoreColumnWidths()
@@ -69,7 +70,7 @@
       @$tableHeaders.each (_, el) =>
         $el = $(el)
 
-        if ($el.attr(@options.noResizeAttr)?)
+        if ($el.attr(@options.noResizeAttr) == 'true')
           return;
 
         width = ($el.outerWidth() / @$table.width() * 100)
@@ -130,10 +131,15 @@
     createHandles: ->
       @$handleContainer?.remove()
       @$table.before (@$handleContainer = $("<div class='rc-handle-container' />"))
+
       @$tableHeaders.each (i, el) =>
-        return if @$tableHeaders.eq(i + 1).length == 0 ||
-                  @$tableHeaders.eq(i).attr(@options.noResizeAttr)? ||
-                  @$tableHeaders.eq(i + 1).attr(@options.noResizeAttr)?
+        return if @$tableHeaders.eq(i).attr(@options.noResizeAttr) == 'true'
+        @lastDraggableHeaderIndex = i
+
+      @$tableHeaders.each (i, el) =>
+        return if i == @lastDraggableHeaderIndex ||
+                  @$tableHeaders.eq(i + 1).length == 0 ||
+                  @$tableHeaders.eq(i).attr(@options.noResizeAttr) == 'true'
 
         $handle = $("<div class='rc-handle' />")
         $handle.data('th', $(el))
@@ -145,7 +151,7 @@
       @$handleContainer.width(@$table.width()).find('.rc-handle').each (_, el) =>
         $el = $(el)
 
-        $th = @$tableHeaders.filter(':not([' + @options.noResizeAttr + '])').eq(_);
+        $th = @$tableHeaders.filter(':not([' + @options.noResizeAttr + '=true])').eq(_);
 
         $el.css
           left: $th.outerWidth() + ($th.offset().left - @$handleContainer.offset().left)
@@ -154,7 +160,7 @@
     saveColumnWidths: ->
       @$tableHeaders.each (_, el) =>
         $el = $(el)
-        unless $el.attr(@options.noResizeAttr)?
+        unless $el.attr(@options.noResizeAttr) == 'true'
           if @options.store?
             @options.store.set @getColumnId($el), parseWidth($el[0])
 
@@ -191,8 +197,8 @@
       startPosition = pointerX(e)
       $currentGrip = $(e.currentTarget)
       gripIndex = $currentGrip.index()
-      $leftColumn = @$tableHeaders.filter(':not([' + @options.noResizeAttr + '])').eq(gripIndex)
-      $rightColumn = @$tableHeaders.filter(':not([' + @options.noResizeAttr + '])').eq(gripIndex + 1)
+      $leftColumn = @$tableHeaders.filter(':not([' + @options.noResizeAttr + '=true])').eq(gripIndex)
+      $rightColumn = @$tableHeaders.filter(':not([' + @options.noResizeAttr + '=true])').eq(gripIndex + 1)
 
       widths =
         left: parseWidth($leftColumn[0])

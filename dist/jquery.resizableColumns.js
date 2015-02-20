@@ -1,4 +1,4 @@
-/* jQuery Resizable Columns v0.1.0 | https://github.com/woolyninja/jquery-resizable-columns | Licensed MIT | Built Wed Jan 28 2015 16:11:04 */
+/* jQuery Resizable Columns v0.1.0 | https://github.com/woolyninja/jquery-resizable-columns | Licensed MIT | Built Fri Feb 20 2015 11:46:32 */
 /* Forked from original project @ http://dobtco.github.io/jquery-resizable-columns/ */
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
@@ -36,6 +36,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       this.constrainWidth = __bind(this.constrainWidth, this);
       this.options = $.extend({}, this.defaults, options);
       this.$table = $table;
+      this.lastDraggableHeaderIndex = 999;
       this.setHeaders();
       this.restoreColumnWidths();
       this.syncHandleWidths();
@@ -83,7 +84,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         return function(_, el) {
           var $el, calcedCssMaxWidth, calcedCssMinWidth, width;
           $el = $(el);
-          if (($el.attr(_this.options.noResizeAttr) != null)) {
+          if ($el.attr(_this.options.noResizeAttr) === 'true') {
             return;
           }
           width = $el.outerWidth() / _this.$table.width() * 100;
@@ -148,8 +149,16 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       this.$table.before((this.$handleContainer = $("<div class='rc-handle-container' />")));
       this.$tableHeaders.each((function(_this) {
         return function(i, el) {
+          if (_this.$tableHeaders.eq(i).attr(_this.options.noResizeAttr) === 'true') {
+            return;
+          }
+          return _this.lastDraggableHeaderIndex = i;
+        };
+      })(this));
+      this.$tableHeaders.each((function(_this) {
+        return function(i, el) {
           var $handle;
-          if (_this.$tableHeaders.eq(i + 1).length === 0 || (_this.$tableHeaders.eq(i).attr(_this.options.noResizeAttr) != null) || (_this.$tableHeaders.eq(i + 1).attr(_this.options.noResizeAttr) != null)) {
+          if (i === _this.lastDraggableHeaderIndex || _this.$tableHeaders.eq(i + 1).length === 0 || _this.$tableHeaders.eq(i).attr(_this.options.noResizeAttr) === 'true') {
             return;
           }
           $handle = $("<div class='rc-handle' />");
@@ -165,7 +174,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         return function(_, el) {
           var $el, $th;
           $el = $(el);
-          $th = _this.$tableHeaders.filter(':not([' + _this.options.noResizeAttr + '])').eq(_);
+          $th = _this.$tableHeaders.filter(':not([' + _this.options.noResizeAttr + '=true])').eq(_);
           return $el.css({
             left: $th.outerWidth() + ($th.offset().left - _this.$handleContainer.offset().left),
             height: _this.options.resizeFromBody ? _this.$table.height() : _this.$table.find('thead').height()
@@ -179,7 +188,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
         return function(_, el) {
           var $el;
           $el = $(el);
-          if ($el.attr(_this.options.noResizeAttr) == null) {
+          if ($el.attr(_this.options.noResizeAttr) !== 'true') {
             if (_this.options.store != null) {
               return _this.options.store.set(_this.getColumnId($el), parseWidth($el[0]));
             }
@@ -230,8 +239,8 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
       startPosition = pointerX(e);
       $currentGrip = $(e.currentTarget);
       gripIndex = $currentGrip.index();
-      $leftColumn = this.$tableHeaders.filter(':not([' + this.options.noResizeAttr + '])').eq(gripIndex);
-      $rightColumn = this.$tableHeaders.filter(':not([' + this.options.noResizeAttr + '])').eq(gripIndex + 1);
+      $leftColumn = this.$tableHeaders.filter(':not([' + this.options.noResizeAttr + '=true])').eq(gripIndex);
+      $rightColumn = this.$tableHeaders.filter(':not([' + this.options.noResizeAttr + '=true])').eq(gripIndex + 1);
       widths = {
         left: parseWidth($leftColumn[0]),
         right: parseWidth($rightColumn[0])
