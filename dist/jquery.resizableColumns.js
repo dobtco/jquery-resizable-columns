@@ -1,4 +1,4 @@
-/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Fri Dec 05 2014 22:21:04 */
+/* jQuery Resizable Columns v0.1.0 | http://dobtco.github.io/jquery-resizable-columns/ | Licensed MIT | Built Thu Mar 12 2015 15:14:55 */
 var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __slice = [].slice;
 
@@ -70,9 +70,24 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
     };
 
     ResizableColumns.prototype.destroy = function() {
+      var $table;
+      $(this.$table.attr('ownerDocument')).off('.rc');
+      this.$handleContainer.find('.rc-handle').each((function(_this) {
+        return function(_, el) {
+          var $handle;
+          $handle = $(el);
+          $handle.removeData('th');
+          return $handle.off('mousedown touchstart');
+        };
+      })(this));
       this.$handleContainer.remove();
+      this.$handleContainer = null;
       this.$table.removeData('resizableColumns');
-      return this.$table.add(window).off('.rc');
+      this.$table.add(window).off('.rc');
+      this.$tableHeaders = null;
+      $table = this.$table;
+      this.$table = null;
+      return $table;
     };
 
     ResizableColumns.prototype.assignPercentageWidths = function() {
@@ -196,7 +211,7 @@ var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments)
           return _this.triggerEvent('column:resize', [$leftColumn, $rightColumn, newWidths.left, newWidths.right], e);
         };
       })(this));
-      return $ownerDocument.one('mouseup touchend', (function(_this) {
+      return $ownerDocument.one('mouseup.rc touchend.rc', (function(_this) {
         return function() {
           $ownerDocument.off('mousemove.rc touchmove.rc');
           _this.$handleContainer.add(_this.$table).removeClass('rc-table-resizing');
