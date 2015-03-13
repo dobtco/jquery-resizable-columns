@@ -58,9 +58,19 @@
       @createHandles()
 
     destroy: ->
+      $(@$table.attr('ownerDocument')).off '.rc'
+      @$handleContainer.find('.rc-handle').each (_, el) =>
+        $handle = $(el)
+        $handle.removeData('th')
+        $handle.off 'mousedown touchstart'
       @$handleContainer.remove()
+      @$handleContainer = null
       @$table.removeData('resizableColumns')
       @$table.add(window).off '.rc'
+      @$tableHeaders = null
+      $table = @$table
+      @$table = null
+      $table
 
     assignPercentageWidths: ->
       @$tableHeaders.each (_, el) =>
@@ -147,7 +157,7 @@
           @syncHandleWidths()
         @triggerEvent 'column:resize', [ $leftColumn, $rightColumn, newWidths.left, newWidths.right ], e
         
-      $ownerDocument.one 'mouseup touchend', =>
+      $ownerDocument.one 'mouseup.rc touchend.rc', =>
         $ownerDocument.off 'mousemove.rc touchmove.rc'
         @$handleContainer.add(@$table).removeClass 'rc-table-resizing' 
         $leftColumn.add($rightColumn).add($currentGrip).removeClass 'rc-column-resizing'
