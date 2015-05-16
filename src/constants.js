@@ -1,5 +1,4 @@
 export const DATA_API = 'resizableColumns';
-export const DATA_NO_RESIZE = 'noresize';
 export const DATA_COLUMNS_ID = 'resizable-columns-id';
 export const DATA_COLUMN_ID = 'resizable-column-id';
 export const DATA_TH = 'th';
@@ -15,3 +14,4 @@ export const EVENT_RESIZE_STOP = 'column:resize:stop';
 
 export const SELECTOR_TH = 'tr:first > th:visible';
 export const SELECTOR_TD = 'tr:first > td:visible';
+export const SELECTOR_UNRESIZABLE = `[data-noresize]`;

@@ -1,6 +1,5 @@
 import {
 	DATA_API,
-	DATA_NO_RESIZE,
 	DATA_COLUMNS_ID,
 	DATA_COLUMN_ID,
 	DATA_TH,
@@ -12,7 +11,8 @@ import {
 	EVENT_RESIZE,
 	EVENT_RESIZE_STOP,
 	SELECTOR_TH,
-	SELECTOR_TD
+	SELECTOR_TD,
+	SELECTOR_UNRESIZABLE
 }
 from './constants';
 
@@ -91,7 +91,7 @@ export default class ResizableColumns {
 			let $current = this.$tableHeaders.eq(i);
 			let $next = this.$tableHeaders.eq(i + 1);
 
-			if ($next.length === 0 || $current.data(DATA_NO_RESIZE) || $next.data(DATA_NO_RESIZE)) {
+			if ($next.length === 0 || $current.is(SELECTOR_UNRESIZABLE) || $next.is(SELECTOR_UNRESIZABLE)) {
 				return;
 			}
 
@@ -149,7 +149,7 @@ export default class ResizableColumns {
 		this.$tableHeaders.each((_, el) => {
 			let $el = $(el);
 
-			if (this.options.store && $el.data(DATA_NO_RESIZE) == null) {
+			if (this.options.store && !$el.is(SELECTOR_UNRESIZABLE)) {
 				this.options.store.set(
 					this.generateColumnId($el),
 					this.parseWidth(el)
@@ -167,7 +167,7 @@ export default class ResizableColumns {
 		this.$tableHeaders.each((_, el) => {
 			let $el = $(el);
 
-			if(this.options.store && $el.data(DATA_NO_RESIZE) == null) {
+			if(this.options.store && !$el.is(SELECTOR_UNRESIZABLE)) {
 				let width = this.options.store.get(
 					this.generateColumnId($el)
 				);
@@ -196,9 +196,15 @@ export default class ResizableColumns {
 			this.onPointerUp(event);
 		}
 
+		// Ignore non-resizable columns
 		let $currentGrip = $(event.currentTarget);
-		let $leftColumn = $currentGrip.data(DATA_TH);
-		let $rightColumn =  this.$tableHeaders.eq(this.$tableHeaders.index($leftColumn) + 1);
+		if($currentGrip.is(SELECTOR_UNRESIZABLE)) {
+			return;
+		}
+
+		let gripIndex = $currentGrip.index();
+		let $leftColumn = this.$tableHeaders.eq(gripIndex).not(SELECTOR_UNRESIZABLE);
+		let $rightColumn = this.$tableHeaders.eq(gripIndex + 1).not(SELECTOR_UNRESIZABLE);
 
 		let leftWidth = this.parseWidth($leftColumn[0]);
 		let rightWidth = this.parseWidth($rightColumn[0]);
@@ -249,12 +255,31 @@ export default class ResizableColumns {
 		let op = this.operation;
 		if(!this.operation) { return; }
 
+		// Determine the delta change between start and new mouse position, as a percentage of the table width
 		let difference = (this.getPointerX(event) - op.startX) / this.$table.width() * 100;
-		let widthLeft = this.constrainWidth(op.widths.left + difference);
-		let widthRight = this.constrainWidth(op.widths.right - difference);
+		if(difference === 0) {
+			return;
+		}
 
-		this.setWidth(op.$leftColumn[0], widthLeft);
-		this.setWidth(op.$rightColumn[0], widthRight);
+		let leftColumn = op.$leftColumn[0];
+		let rightColumn = op.$rightColumn[0];
+		let widthLeft, widthRight;
+
+		if(difference > 0) {
+			widthLeft = this.constrainWidth(op.widths.left + (op.widths.right - op.newWidths.right));
+			widthRight = this.constrainWidth(op.widths.right - difference);
+		}
+		else if(difference < 0) {
+			widthLeft = this.constrainWidth(op.widths.left + difference);
+			widthRight = this.constrainWidth(op.widths.right + (op.widths.left - op.newWidths.left));
+		}
+
+		if(leftColumn) {
+			this.setWidth(leftColumn, widthLeft);
+		}
+		if(rightColumn) {
+			this.setWidth(rightColumn, widthRight);
+		}
 
 		op.newWidths.left = widthLeft;
 		op.newWidths.right = widthRight;
@@ -418,7 +443,7 @@ export default class ResizableColumns {
 	@return {Number} Element's width as a float
 	**/
 	parseWidth(element) {
-		return parseFloat(element.style.width.replace('%', ''));
+		return element ? parseFloat(element.style.width.replace('%', '')) : 0;
 	}
 
 	/**
@@ -430,7 +455,6 @@ export default class ResizableColumns {
 	@param width {Number} Width, as a percentage, to set
 	**/
 	setWidth(element, width) {
-		!width && console.trace()
 		width = width.toFixed(2);
 		width = width > 0 ? width : 0;
 		element.style.width = width + '%';
@@ -446,11 +470,11 @@ export default class ResizableColumns {
 	@return {Number} Constrained width
 	**/
 	constrainWidth(width) {
-		if (this.options.minWidth != null) {
+		if (this.options.minWidth != undefined) {
 			width = Math.max(this.options.minWidth, width);
 		}
 
-		if (this.options.maxWidth != null) {
+		if (this.options.maxWidth != undefined) {
 			width = Math.min(this.options.maxWidth, width);
 		}
 
