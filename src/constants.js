@@ -13,4 +13,5 @@ export const EVENT_RESIZE_START = 'column:resize:start';
 export const EVENT_RESIZE = 'column:resize';
 export const EVENT_RESIZE_STOP = 'column:resize:stop';
 
-export const HEADER_SELECTOR = 'tr th:visible';
+export const SELECTOR_TH = 'tr:first > th:visible';
+export const SELECTOR_TD = 'tr:first > td:visible';

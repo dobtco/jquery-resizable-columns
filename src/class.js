@@ -11,7 +11,8 @@ import {
 	EVENT_RESIZE_START,
 	EVENT_RESIZE,
 	EVENT_RESIZE_STOP,
-	HEADER_SELECTOR
+	SELECTOR_TH,
+	SELECTOR_TD
 }
 from './constants';
 
@@ -57,7 +58,17 @@ export default class ResizableColumns {
 	@method refreshHeaders
 	**/
 	refreshHeaders() {
-		this.$tableHeaders = this.$table.find(this.options.selector);
+		// Allow the selector to be both a regular selctor string as well as
+		// a dynamic callback
+		let selector = this.options.selector;
+		if(typeof selector === 'function') {
+			selector = selector.call(this, this.$table);
+		}
+
+		// Select all table headers
+		this.$tableHeaders = this.$table.find(selector);
+
+		// Assign percentage widths first, then create drag handles
 		this.assignPercentageWidths();
 		this.createHandles();
 	}
@@ -465,7 +476,13 @@ export default class ResizableColumns {
 }
 
 ResizableColumns.defaults = {
-	selector: HEADER_SELECTOR,
+	selector: function($table) {
+		if($table.find('thead').length) {
+			return SELECTOR_TH;
+		}
+
+		return SELECTOR_TD;
+	},
 	store: window.store,
 	syncHandlers: true,
 	resizeFromBody: true,
