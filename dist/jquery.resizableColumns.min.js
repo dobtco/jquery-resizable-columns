@@ -1,7 +1,7 @@
 /**
  * jquery-resizable-columns - Resizable table columns for jQuery
- * @date Sat May 16 2015 17:15:18 GMT+0100 (BST)
- * @version v0.1.0
+ * @date Sat May 16 2015 17:17:54 GMT+0100 (BST)
+ * @version v0.2.1
  * @link http://dobtco.github.io/jquery-resizable-columns/
  * @license MIT
  */

@@ -1,7 +1,7 @@
 {
   "name": "jquery-resizable-columns",
   "main": "dist/jquery.resizableColumns.min.js",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "homepage": "http://dobtco.github.io/jquery-resizable-columns/",
   "authors": [
     "Adam Becker <ad@mbecker.cc> (http://ada.mbecker.cc)",

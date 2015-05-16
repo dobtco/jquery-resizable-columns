@@ -2,7 +2,7 @@
   "name": "jquery-resizable-columns",
   "title": "jQuery Resizable Columns",
   "description": "Resizable table columns for jQuery",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Adam Becker <ad@mbecker.cc> (http://ada.mbecker.cc)",
   "homepage": "http://dobtco.github.io/jquery-resizable-columns/",
   "license": "MIT",
