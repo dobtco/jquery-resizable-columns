@@ -71,7 +71,8 @@ var ResizableColumns = (function () {
 		this.$table = $table;
 
 		this.refreshHeaders();
-		this.restoreColumnWidths();
+      if(this.options.initialResize)
+         this.restoreColumnWidths();
 		this.syncHandleWidths();
 
 		this.bindEvents(this.$window, 'resize', this.syncHandleWidths.bind(this));
@@ -545,7 +546,8 @@ ResizableColumns.defaults = {
 	syncHandlers: true,
 	resizeFromBody: true,
 	maxWidth: null,
-	minWidth: 0.01
+	minWidth: 0.01,
+   initialResize: true
 };
 
 ResizableColumns.count = 0;
