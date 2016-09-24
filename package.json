@@ -23,7 +23,7 @@
     "resizable",
     "adam becker"
   ],
-  "main": "dist/jquery.resizableColumns.js",
+  "main": "dist/jquery.resizableColumns.js, dist/jquery.resizableColumns.css",
   "devDependencies": {
     "babel": "^5.3.3",
     "babelify": "^6.1.0",

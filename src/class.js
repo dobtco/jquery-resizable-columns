@@ -498,7 +498,7 @@ export default class ResizableColumns {
 	@return {String} Column ID
 	**/
 	generateColumnId($el) {
-		return this.$table.data(DATA_COLUMNS_ID) + '-' + $el.data(DATA_COLUMN_ID);
+		return this.$table.data(DATA_COLUMNS_ID).replace(/\./g, '_') + '-' + $el.data(DATA_COLUMN_ID).replace(/\./g, '_');
 	}
 
 	/**
