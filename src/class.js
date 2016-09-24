@@ -2,7 +2,6 @@ import {
 	DATA_API,
 	DATA_COLUMNS_ID,
 	DATA_COLUMN_ID,
-	DATA_TH,
 	DATA_CSS_MIN_WIDTH,
 	DATA_CSS_MAX_WIDTH,
 	CLASS_TABLE_RESIZING,
@@ -99,7 +98,6 @@ export default class ResizableColumns {
 			}
 
 			let $handle = $(`<div class='${CLASS_HANDLE}' />`)
-				.data(DATA_TH, $(el))
 				.appendTo(this.$handleContainer);
 		});
 
@@ -202,9 +200,9 @@ export default class ResizableColumns {
 				this.$table.height() :
 				this.$table.find('thead').height();
 
-			let left = $el.data(DATA_TH).outerWidth() + (
-				$el.data(DATA_TH).offset().left - this.$handleContainer.offset().left
-			);
+			let $th = this.$tableHeaders.filter(`:not(${SELECTOR_UNRESIZABLE})`).eq(_);
+
+			let left = $th.outerWidth() + ($th.offset().left - this.$handleContainer.offset().left);
 
 			$el.css({ left, height });
 		});
@@ -412,7 +410,6 @@ export default class ResizableColumns {
 				.add($handles)
 		);
 
-		$handles.removeData(DATA_TH);
 		$table.removeData(DATA_API);
 
 		this.$handleContainer.remove();

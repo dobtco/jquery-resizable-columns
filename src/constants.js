@@ -1,7 +1,6 @@
 export const DATA_API = 'resizableColumns';
 export const DATA_COLUMNS_ID = 'resizable-columns-id';
 export const DATA_COLUMN_ID = 'resizable-column-id';
-export const DATA_TH = 'th';
 export const DATA_CSS_MIN_WIDTH = 'cssMinWidth';
 export const DATA_CSS_MAX_WIDTH = 'cssMaxWidth';
 
