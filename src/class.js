@@ -123,24 +123,66 @@ export default class ResizableColumns {
 			$el.data(DATA_CSS_MIN_WIDTH, 0);
 			$el.data(DATA_CSS_MAX_WIDTH, 100);
 
-			if (this.options.obeyCssMinWidth) {
-				let minWidth = this.parseFloat(el.style.minWidth);
-				if (!isNaN(minWidth)) {
-					$el.data(DATA_CSS_MIN_WIDTH, minWidth);
-					width = Math.max(minWidth, width);
-				}
+			let minWidth = this.computeMinCssWidths($el);
+			if (minWidth != null) {
+				$el.data(DATA_CSS_MIN_WIDTH, minWidth);
+				width = Math.max(minWidth, width); 
 			}
-
-			if (this.options.obeyCssMaxWidth) {
-				let maxWidth = this.parseFloat(el.style.maxWidth);
-				if (!isNaN(maxWidth)) {
-					$el.data(DATA_CSS_MAX_WIDTH, maxWidth);
-					width = Math.min(maxWidth, width);
-				}
+			
+			let maxWidth = this.computeMaxCssWidths($el);
+			if (maxWidth != null) {
+				$el.data(DATA_CSS_MAX_WIDTH, maxWidth);
+				width = Math.min(maxWidth, width); 
 			}
 
 			this.setWidth($el[0], width);
 		});
+	}
+
+	/**
+	Compute the minimum width taking into account CSS
+
+	@method computeMinCssWidths
+	@param $el {jQuery} jQuery-wrapped DOMElement for which we compute the minimum width
+	**/
+	computeMinCssWidths($el) {
+		let el, minWidth;
+		minWidth = null;
+		el = $el[0];
+		if (this.options.obeyCssMinWidth) {
+			if (el.style.minWidth.slice(-2) === 'px') {
+				minWidth = parseFloat(el.style.minWidth) / this.$table.width() * 100;
+			} else {
+				minWidth = parseFloat(el.style.minWidth);
+			}
+			if (isNaN(minWidth)) {
+				minWidth = null;
+			}
+		}
+		return minWidth;
+	}
+
+	/**
+	Compute the maximum width taking into account CSS
+
+	@method computeMaxCssWidths
+	@param $el {jQuery} jQuery-wrapped DOMElement for which we compute the maximum width
+	**/
+	computeMaxCssWidths($el) {
+		let el, maxWidth;
+		maxWidth = null;
+		el = $el[0];
+		if (this.options.obeyCssMaxWidth) {
+			if (el.style.maxWidth.slice(-2) === 'px') {
+				maxWidth = parseFloat(el.style.maxWidth) / this.$table.width() * 100;
+			} else {
+				maxWidth = parseFloat(el.style.maxWidth);
+			}
+			if (isNaN(maxWidth)) {
+				maxWidth = null;
+			}
+		}
+		return maxWidth;
 	}
 
 	/**
@@ -494,6 +536,7 @@ export default class ResizableColumns {
 
 	@private
 	@method constrainWidth
+	@param $el {jQuery} jQuery-wrapped DOMElement
 	@param width {Number} Width to constrain
 	@return {Number} Constrained width
 	**/
