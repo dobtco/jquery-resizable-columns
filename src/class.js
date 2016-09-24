@@ -501,6 +501,9 @@ export default class ResizableColumns {
 			width = Math.min(this.options.maxWidth, width, $el.data(DATA_CSS_MAX_WIDTH));
 		}
 
+		width = Math.max(0, width);
+ 		width = Math.min(100, width);
+
 		return width;
 	}
 
