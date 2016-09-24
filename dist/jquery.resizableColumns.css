@@ -8,6 +8,9 @@
   margin-left: -3px;
   z-index: 2;
 }
+.rc-absolute .rc-handle:last-of-type {
+  width: 4px;
+}
 table.rc-table-resizing {
   cursor: ew-resize;
 }
@@ -15,4 +18,18 @@ table.rc-table-resizing thead,
 table.rc-table-resizing thead > th,
 table.rc-table-resizing thead > th > a {
   cursor: ew-resize;
+}
+.rc-table-wrapper {
+  overflow-x: auto;
+}
+.rc-table-wrapper table {
+  table-layout: fixed;
+  white-space: nowrap;
+  margin: 0;
+}
+.rc-table-wrapper table th,
+.rc-table-wrapper table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

@@ -8,6 +8,10 @@
   cursor: ew-resize;
   margin-left: -3px;
   z-index: 2;
+
+  .rc-absolute &:last-of-type {
+    width: 4px;
+  }
 }
 
 table.rc-table-resizing {
@@ -17,3 +21,25 @@ table.rc-table-resizing {
     cursor: ew-resize;
   }
 }
+
+.rc-table-wrapper {
+  overflow-x: auto;
+
+  table {
+    table-layout: fixed;
+    white-space: nowrap;
+    margin: 0;
+
+
+    th,
+    td {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+    
+
+    

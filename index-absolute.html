@@ -5,24 +5,6 @@
   <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="dist/jquery.resizableColumns.css">
   <link rel="stylesheet" href="demo/demo.css">
-  <style>
-    .tabel-wrapper {
-      overflow-x: scroll;
-    }
-
-    .tabel-wrapper table {
-      table-layout: fixed;
-      white-space: nowrap;
-      margin: 0;
-    }
-
-    .tabel-wrapper table th,
-    .tabel-wrapper table td {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-  </style>
 </head>
 <body>
   <a href="http://github.com/dobtco/jquery-resizable-columns">
@@ -39,37 +21,35 @@
 
     <blockquote><em>Grab the column borders and drag 'em! <strong>Bonus: refresh the page.</strong></em></blockquote>
 
-    <div class="tabel-wrapper">
-      <table class="table table-bordered" data-resizable-columns-id="demo-table-v2">
-        <thead>
-          <tr>
-            <th data-resizable-column-id="#">#</th>
-            <th data-resizable-column-id="first_name">First Name</th>
-            <th data-resizable-column-id="last_name">Last Name</th>
-            <th data-resizable-column-id="username" id="username-column">Username</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>JacobJacobJacobJacobJacobJacobJacobJacobJacobJacobJacobJacobJacob</td>
-            <td>Thornton</td>
-            <td>@fat</td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td colspan="2">Larry the Bird</td>
-            <td>@twitter</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <table class="table table-bordered" data-resizable-columns-id="demo-table-v2">
+      <thead>
+        <tr>
+          <th data-resizable-column-id="#">#</th>
+          <th data-resizable-column-id="first_name">First Name</th>
+          <th data-resizable-column-id="last_name">Last Name</th>
+          <th data-resizable-column-id="username" id="username-column">Username</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>Mark</td>
+          <td>Otto</td>
+          <td>@mdo</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>JacobJacobJacobJacobJacobJacobJacobJacobJacobJacobJacobJacobJacob</td>
+          <td>Thornton</td>
+          <td>@fat</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td colspan="2">Larry the Bird</td>
+          <td>@twitter</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <!-- jQuery -->
@@ -85,7 +65,8 @@
       $("table").resizableColumns({
         store: window.store,
         absoluteWidths: true,
-        minWidth: 30
+        minWidth: 30,
+        wrappTable: true
       });
     });
   </script>

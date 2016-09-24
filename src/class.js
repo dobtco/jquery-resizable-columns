@@ -1,20 +1,22 @@
 import {
+	ATTRIBUTE_UNRESIZABLE,
 	DATA_API,
 	DATA_COLUMNS_ID,
 	DATA_COLUMN_ID,
 	DATA_CSS_MIN_WIDTH,
 	DATA_CSS_MAX_WIDTH,
+	CLASS_ABSOLUTE,
 	CLASS_TABLE_RESIZING,
 	CLASS_COLUMN_RESIZING,
 	CLASS_HANDLE,
 	CLASS_HANDLE_CONTAINER,
+	CLASS_TABLE_WRAPPER,
 	EVENT_RESIZE_START,
 	EVENT_RESIZE,
 	EVENT_RESIZE_STOP,
 	SELECTOR_TH,
 	SELECTOR_TD,
-	SELECTOR_UNRESIZABLE,
-	ATTRIBUTE_UNRESIZABLE
+	SELECTOR_UNRESIZABLE
 }
 from './constants';
 
@@ -38,6 +40,7 @@ export default class ResizableColumns {
 		this.lastPointerDown = null;
 		this.isDoubleClick = false;
 
+		this.wrapTable();
 		this.refreshHeaders();
 		this.restoreColumnWidths();
 		this.syncHandleWidths();
@@ -53,6 +56,22 @@ export default class ResizableColumns {
 		if (this.options.stop) {
 			this.bindEvents(this.$table, EVENT_RESIZE_STOP, this.options.stop);
 		}
+	}
+
+	/**
+	Wrap the table DOMElement in a div
+
+	@private
+	@method refreshHeaders
+	**/
+	wrapTable() {
+		if(!this.options.wrappTable) {
+			return;
+		}
+
+		this.$table
+			.wrap(`<div class="${CLASS_TABLE_WRAPPER}"></div>`)
+			.width(this.$table.innerWidth());
 	}
 
 	/**
@@ -93,6 +112,9 @@ export default class ResizableColumns {
 		}
 
 		this.$handleContainer = $(`<div class='${CLASS_HANDLE_CONTAINER}' />`)
+		if (this.options.absoluteWidths) {
+			this.$handleContainer.addClass(CLASS_ABSOLUTE);
+		}
 		this.$table.before(this.$handleContainer);
 
 		this.$tableHeaders.each((i, el) => {
@@ -518,37 +540,35 @@ export default class ResizableColumns {
 
 		let gripIndex = $currentGrip.index();
 		let $leftColumn = this.$tableHeaders.eq(gripIndex).not(SELECTOR_UNRESIZABLE);
-
-		if (this.options.absoluteWidths) {
-			let left = $leftColumn.get(0);
-			if (left) {
-				let $fakeEl = $('<span>').css({
-					'position': 'absolute',
-					'visibility': 'hidden',
-					'left': '-99999px',
-					'top': '-99999px'
-				});
-				$('body').append($fakeEl);
-				let maxWidth = 0,
-					targetPosition = gripIndex + 1;
-				this.$table.find('tr').each((iTr, tr) => {
-					let pos = 0;
-					$(tr).find('td, th').each((iTd, td) => {
-						let $td = $(td);
-						pos ++;
-						if (pos === targetPosition) {
-							maxWidth = Math.max(maxWidth, this.getTextWidth($td, $fakeEl))
-							return false;
-						}
-						pos = pos -1 + ($td.prop('colspan') || 1); //Remove 1 for the previous increment						
-					});
-				});
-				$fakeEl.remove();
-				this.setWidth(left, maxWidth);
-			}
-		} else {
-			//TODO
+		let left = $leftColumn.get(0);
+		if (!left) {
+			return;
 		}
+		
+		let $fakeEl = $('<span>').css({
+			'position': 'absolute',
+			'visibility': 'hidden',
+			'left': '-99999px',
+			'top': '-99999px'
+		});
+		$('body').append($fakeEl);
+		let maxWidth = 0;
+		this.$table.find('tr').each((iTr, tr) => {
+			let pos = 0;
+			$(tr).find('td, th').each((iTd, td) => {
+				let $td = $(td);
+				if (pos === gripIndex) {
+					maxWidth = Math.max(maxWidth, this.getTextWidth($td, $fakeEl))
+					return false;
+				}
+				pos += ($td.prop('colspan') || 1);						
+			});
+		});
+		$fakeEl.remove();
+		if (!this.options.absoluteWidths) {
+			maxWidth = maxWidth / this.$table.width() * 100;
+		}
+		this.setWidth(left, maxWidth);
 	}
 
 	/**
@@ -891,7 +911,8 @@ ResizableColumns.defaults = {
 	obeyCssMinWidth: false,
  	obeyCssMaxWidth: false,
 	absoluteWidths: false,
-	doubleClickDelay: 500
+	doubleClickDelay: 500,
+	wrappTable: false
 };
 
 ResizableColumns.count = 0;
