@@ -35,6 +35,8 @@ export default class ResizableColumns {
 		this.$window = $(window);
 		this.$ownerDocument = $($table[0].ownerDocument);
 		this.$table = $table;
+		this.lastPointerDown = null;
+		this.isDoubleClick = false;
 
 		this.refreshHeaders();
 		this.restoreColumnWidths();
@@ -454,6 +456,8 @@ export default class ResizableColumns {
 			return;
 		}
 
+		this.isDoubleClick = this.lastPointerDown != null && ((new Date() - this.lastPointerDown) < this.options.doubleClickDelay);
+		this.lastPointerDown = new Date();
 		let gripIndex = $currentGrip.index();
 		let $leftColumn = this.$tableHeaders.eq(gripIndex).not(SELECTOR_UNRESIZABLE);
 		let $rightColumn = this.$tableHeaders.eq(gripIndex + 1).not(SELECTOR_UNRESIZABLE);
@@ -492,9 +496,59 @@ export default class ResizableColumns {
 			$leftColumn, $rightColumn,
 			leftWidth, rightWidth
 		],
-		event);
-
+		event);		
+		
 		event.preventDefault();
+	}
+
+	/**
+	Pointer/mouse double click
+
+	@method onDoubleClick
+	@param event {Object} Event object associated with the interaction
+	**/
+	onDoubleClick(event) {
+		if (!this.operation)
+			return;
+			
+		let $currentGrip = this.operation.$currentGrip;
+		if($currentGrip.is(SELECTOR_UNRESIZABLE)) {
+			return;
+		}
+
+		let gripIndex = $currentGrip.index();
+		let $leftColumn = this.$tableHeaders.eq(gripIndex).not(SELECTOR_UNRESIZABLE);
+
+		if (this.options.absoluteWidths) {
+			let left = $leftColumn.get(0);
+			if (left) {
+				let $fakeEl = $('<span>').css({
+					'position': 'absolute',
+					'visibility': 'hidden',
+					'left': '-99999px',
+					'top': '-99999px'
+				});
+				$('body').append($fakeEl);
+				let maxWidth = 0,
+					targetPosition = gripIndex + 1;
+				this.$table.find('tr').each((iTr, tr) => {
+					let pos = 0;
+					$(tr).find('td, th').each((iTd, td) => {
+						let $td = $(td);
+						pos ++;
+						if (pos === targetPosition) {
+							maxWidth = Math.max(maxWidth, this.getTextWidth($td, $fakeEl))
+							return false;
+						}
+						pos = pos -1 + ($td.prop('colspan') || 1); //Remove 1 for the previous increment						
+					});
+				});
+				$fakeEl.remove();
+				this.setWidth(left, maxWidth);
+			}
+		} else {
+			//TODO
+		}
 	}
 
 	/**
@@ -572,6 +626,10 @@ export default class ResizableColumns {
 		if(!this.operation) { return; }
 
 		this.unbindEvents(this.$ownerDocument, ['mouseup', 'touchend', 'mousemove', 'touchmove']);
+
+		if (this.isDoubleClick){
+			this.onDoubleClick(event)
+		}
 
 		this.$handleContainer
 			.add(this.$table)
@@ -792,6 +850,29 @@ export default class ResizableColumns {
 		}
 		return event.pageX;
 	}
+
+	/**
+	Gets the text width of an element
+
+	@private
+	@method getTextWidth
+	@param $el {jQuery} jQuery-wrapped DOMElement that contains the text
+	@param $fakeEl {jQuery} jQuery-wrapped DOMElement that will be used to measure the width
+	@return {Number} Text width
+	**/
+	getTextWidth($el, $fakeEl) {		
+		return $fakeEl
+			.css({
+				'fontFamily': $el.css('fontFamily'),
+				'fontSize': $el.css('fontSize'),
+				'fontWeight': $el.css('fontWeight'),
+				'paddingLeft': $el.css('paddingLeft'),
+				'paddingRight': $el.css('paddingRight'),
+				'border': $el.css('border')
+			})
+			.text($el.text())
+			.outerWidth(true);
+	}
 }
 
 ResizableColumns.defaults = {
@@ -809,7 +890,8 @@ ResizableColumns.defaults = {
 	minWidth: 0.01,
 	obeyCssMinWidth: false,
  	obeyCssMaxWidth: false,
-	absoluteWidths: false
+	absoluteWidths: false,
+	doubleClickDelay: 500
 };
 
 ResizableColumns.count = 0;
