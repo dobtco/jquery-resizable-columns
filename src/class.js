@@ -3,6 +3,8 @@ import {
 	DATA_COLUMNS_ID,
 	DATA_COLUMN_ID,
 	DATA_TH,
+	DATA_CSS_MIN_WIDTH,
+	DATA_CSS_MAX_WIDTH,
 	CLASS_TABLE_RESIZING,
 	CLASS_COLUMN_RESIZING,
 	CLASS_HANDLE,
@@ -110,8 +112,29 @@ export default class ResizableColumns {
 	**/
 	assignPercentageWidths() {
 		this.$tableHeaders.each((_, el) => {
-			let $el = $(el);
-			this.setWidth($el[0], $el.outerWidth() / this.$table.width() * 100);
+			let $el = $(el),
+				width = ($el.outerWidth() / this.$table.width()) * 100;
+			
+			$el.data(DATA_CSS_MIN_WIDTH, 0);
+			$el.data(DATA_CSS_MAX_WIDTH, 100);
+
+			if (this.options.obeyCssMinWidth) {
+				let minWidth = this.parseFloat(el.style.minWidth);
+				if (!isNaN(minWidth)) {
+					$el.data(DATA_CSS_MIN_WIDTH, minWidth);
+					width = Math.max(minWidth, width);
+				}
+			}
+
+			if (this.options.obeyCssMaxWidth) {
+				let maxWidth = this.parseFloat(el.style.maxWidth);
+				if (!isNaN(maxWidth)) {
+					$el.data(DATA_CSS_MAX_WIDTH, maxWidth);
+					width = Math.min(maxWidth, width);
+				}
+			}
+
+			this.setWidth($el[0], width);
 		});
 	}
 
@@ -266,12 +289,12 @@ export default class ResizableColumns {
 		let widthLeft, widthRight;
 
 		if(difference > 0) {
-			widthLeft = this.constrainWidth(op.widths.left + (op.widths.right - op.newWidths.right));
-			widthRight = this.constrainWidth(op.widths.right - difference);
+			widthLeft = this.constrainWidth($(leftColumn), op.widths.left + (op.widths.right - op.newWidths.right));
+			widthRight = this.constrainWidth($(rightColumn), op.widths.right - difference);
 		}
 		else if(difference < 0) {
-			widthLeft = this.constrainWidth(op.widths.left + difference);
-			widthRight = this.constrainWidth(op.widths.right + (op.widths.left - op.newWidths.left));
+			widthLeft = this.constrainWidth($(leftColumn), op.widths.left + difference);
+			widthRight = this.constrainWidth($(rightColumn), op.widths.right + (op.widths.left - op.newWidths.left));
 		}
 
 		if(leftColumn) {
@@ -469,13 +492,13 @@ export default class ResizableColumns {
 	@param width {Number} Width to constrain
 	@return {Number} Constrained width
 	**/
-	constrainWidth(width) {
-		if (this.options.minWidth != undefined) {
-			width = Math.max(this.options.minWidth, width);
+	constrainWidth($el, width) {
+		if (this.options.minWidth != undefined || this.options.obeyCssMinWidth) {
+			width = Math.max(this.options.minWidth, width, $el.data(DATA_CSS_MIN_WIDTH));
 		}
 
-		if (this.options.maxWidth != undefined) {
-			width = Math.min(this.options.maxWidth, width);
+		if (this.options.maxWidth != undefined || this.options.obeyCssMaxWidth) {
+			width = Math.min(this.options.maxWidth, width, $el.data(DATA_CSS_MAX_WIDTH));
 		}
 
 		return width;
@@ -511,7 +534,9 @@ ResizableColumns.defaults = {
 	syncHandlers: true,
 	resizeFromBody: true,
 	maxWidth: null,
-	minWidth: 0.01
+	minWidth: 0.01,
+	obeyCssMinWidth: false,
+ 	obeyCssMaxWidth: false
 };
 
 ResizableColumns.count = 0;
