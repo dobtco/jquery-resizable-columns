@@ -55,7 +55,7 @@ export default class ResizableColumns {
 
 	/**
 	Refreshes the headers associated with this instances <table/> element and
-	generates handles for them. Also assigns percentage widths.
+	generates handles for them. Also assigns widths.
 
 	@method refreshHeaders
 	**/
@@ -70,8 +70,12 @@ export default class ResizableColumns {
 		// Select all table headers
 		this.$tableHeaders = this.$table.find(selector);
 
-		// Assign percentage widths first, then create drag handles
-		this.assignPercentageWidths();
+		// Assign widths first, then create drag handles
+		if (this.options.absoluteWidths) {
+			this.assignAbsoluteWidths();
+		} else {
+			this.assignPercentageWidths();
+		}
 		this.createHandles();
 	}
 
@@ -93,8 +97,14 @@ export default class ResizableColumns {
 			let $current = this.$tableHeaders.eq(i);
 			let $next = this.$tableHeaders.eq(i + 1);
 
-			if ($next.length === 0 || $current.is(SELECTOR_UNRESIZABLE) || $next.is(SELECTOR_UNRESIZABLE)) {
-				return;
+			if (this.options.absoluteWidths){
+				if ($current.is(SELECTOR_UNRESIZABLE)) {
+					return;
+				}
+			} else {
+				if ($next.length === 0 || $current.is(SELECTOR_UNRESIZABLE) || $next.is(SELECTOR_UNRESIZABLE)) {
+					return;
+				}
 			}
 
 			let $handle = $(`<div class='${CLASS_HANDLE}' />`)
@@ -105,8 +115,72 @@ export default class ResizableColumns {
 	}
 
 	/**
+	Assigns a absolute width to all columns based on their current width(s)
+
+	@private
+	@method assignAbsoluteWidths
+	**/
+	assignAbsoluteWidths() {
+		this.$tableHeaders.each((_, el) => {
+			// do not assign width if the column is not resizable
+			if (el.hasAttribute(ATTRIBUTE_UNRESIZABLE))
+				return;
+
+			let $el = $(el),
+				tableWidth = this.$table.width(),
+				paddingLeft = ResizableColumns.parsePixelString($el.css('paddingLeft')),
+				paddingRight = ResizableColumns.parsePixelString($el.css('paddingRight')),
+				width = ($el.outerWidth() - paddingLeft - paddingRight);
+			
+			$el.data(DATA_CSS_MIN_WIDTH, 0);
+			$el.data(DATA_CSS_MAX_WIDTH, tableWidth);
+
+			let minWidth = this.computeMinCssWidths($el);
+			if (minWidth != null) {
+				$el.data(DATA_CSS_MIN_WIDTH, minWidth);
+				width = Math.max(minWidth, width); 
+			}
+			
+			let maxWidth = this.computeMaxCssWidths($el);
+			if (maxWidth != null) {
+				$el.data(DATA_CSS_MAX_WIDTH, maxWidth);
+				width = Math.min(maxWidth, width); 
+			}
+
+			this.setWidth($el[0], width);
+		});
+	}
+
+
+	/**
+	Parse the value of a string by removing 'px'
+
+	@private
+	@method parsePixelString
+	@param value {String}
+	@return {Number} Parsed value or 0
+	**/
+	static parsePixelString(value) {
+		let valueType = typeof value;
+		
+		if (valueType === 'string') {
+			let v = value.replace('px', ''),
+				n = parseFloat(v);
+			if (!isNaN(n)) {
+				return n;
+			}
+
+		} else if (valueType === 'number') {
+			return value;
+		}
+
+		return 0;
+	}
+
+	/**
 	Assigns a percentage width to all columns based on their current pixel width(s)
 
+	@private
 	@method assignPercentageWidths
 	**/
 	assignPercentageWidths() {
@@ -140,6 +214,7 @@ export default class ResizableColumns {
 	/**
 	Compute the minimum width taking into account CSS
 
+	@private
 	@method computeMinCssWidths
 	@param $el {jQuery} jQuery-wrapped DOMElement for which we compute the minimum width
 	**/
@@ -149,7 +224,10 @@ export default class ResizableColumns {
 		el = $el[0];
 		if (this.options.obeyCssMinWidth) {
 			if (el.style.minWidth.slice(-2) === 'px') {
-				minWidth = parseFloat(el.style.minWidth) / this.$table.width() * 100;
+				minWidth = parseFloat(el.style.minWidth);
+				if (!this.options.absoluteWidths) {
+					minWidth = (minWidth / this.$table.width() * 100);
+				}
 			} else {
 				minWidth = parseFloat(el.style.minWidth);
 			}
@@ -163,6 +241,7 @@ export default class ResizableColumns {
 	/**
 	Compute the maximum width taking into account CSS
 
+	@private
 	@method computeMaxCssWidths
 	@param $el {jQuery} jQuery-wrapped DOMElement for which we compute the maximum width
 	**/
@@ -172,7 +251,10 @@ export default class ResizableColumns {
 		el = $el[0];
 		if (this.options.obeyCssMaxWidth) {
 			if (el.style.maxWidth.slice(-2) === 'px') {
-				maxWidth = parseFloat(el.style.maxWidth) / this.$table.width() * 100;
+				maxWidth = parseFloat(el.style.maxWidth);
+				if (!this.options.absoluteWidths) {
+					maxWidth = (maxWidth / this.$table.width() * 100);
+				}
 			} else {
 				maxWidth = parseFloat(el.style.maxWidth);
 			}
@@ -189,6 +271,50 @@ export default class ResizableColumns {
 	@method syncHandleWidths
 	**/
 	syncHandleWidths() {
+		if (this.options.absoluteWidths) {
+			this.syncHandleWidthsAbsolute()
+		} else {
+			this.syncHandleWidthsPercentage();
+		}
+	}
+
+	/**
+
+
+	@private
+	@method syncHandleWidthsAbsolute
+	**/
+	syncHandleWidthsAbsolute() {
+		let $container = this.$handleContainer
+
+		$container.width(this.$table.width()).css('minWidth', this.totalColumnWidthsAbsolute());
+
+		$container.find('.'+CLASS_HANDLE).each((_, el) => {
+			let $el = $(el);
+
+			let height = this.options.resizeFromBody ?
+				this.$table.height() :
+				this.$table.find('thead').height();
+
+			let $th = this.$tableHeaders.filter(`:not(${SELECTOR_UNRESIZABLE})`).eq(_);
+
+			let left = $th.outerWidth()
+			left -= ResizableColumns.parsePixelString($el.css('paddingLeft'));
+			left -= ResizableColumns.parsePixelString($el.css('paddingRight'));
+			left += $th.offset().left;
+			left -= this.$handleContainer.offset().left
+
+			$el.css({ left, height });
+		});
+	}
+
+	/**
+
+
+	@private
+	@method syncHandleWidthsPercentage
+	**/
+	syncHandleWidthsPercentage() {
 		let $container = this.$handleContainer
 
 		$container.width(this.$table.width());
@@ -209,15 +335,67 @@ export default class ResizableColumns {
 	}
 
 	/**
+
+
+	@method totalColumnWidths
+	**/
+	totalColumnWidths() {
+		return this.options.absoluteWidths
+			? this.totalColumnWidthsAbsolute()
+			: this.totalColumnWidthsPercentage();
+	}
+
+	/**
+
+
+	@private
+	@method totalColumnWidthsAbsolute
+	**/
+	totalColumnWidthsAbsolute() {
+		let total = 0;
+
+		this.$tableHeaders.each((_, el) => {
+			let $el = $(el);
+			total += ResizableColumns.parsePixelString($el.width());
+			total += ResizableColumns.parsePixelString($el.css('paddingLeft'));
+			total += ResizableColumns.parsePixelString($el.css('paddingRight'));
+		});
+		
+		return total;
+	}
+
+	/**
+
+
+	@private
+	@method totalColumnWidthsPercentage
+	**/
+	totalColumnWidthsPercentage() {
+		//should be 100% :D
+		let total = 0;
+
+		this.$tableHeaders.each((_, el) => {
+			total += this.parseWidth(el);
+		});
+		
+		return total;
+	}
+
+	/**
 	Persists the column widths in localStorage
 
 	@method saveColumnWidths
 	**/
 	saveColumnWidths() {
+		if (!this.options.store)
+			return;
+
+		this.options.store.set(this.generateTableAbsoluteWidthsId(), this.options.absoluteWidths + '');
+			
 		this.$tableHeaders.each((_, el) => {
 			let $el = $(el);
 
-			if (this.options.store && !$el.is(SELECTOR_UNRESIZABLE)) {
+			if (!$el.is(SELECTOR_UNRESIZABLE)) {
 				this.options.store.set(
 					this.generateColumnId($el),
 					this.parseWidth(el)
@@ -232,10 +410,16 @@ export default class ResizableColumns {
 	@method restoreColumnWidths
 	**/
 	restoreColumnWidths() {
+		if (!this.options.store)
+			return;
+
+		if (this.options.store.get(this.generateTableAbsoluteWidthsId()) !== (this.options.absoluteWidths + ''))
+			return;
+
 		this.$tableHeaders.each((_, el) => {
 			let $el = $(el);
 
-			if(this.options.store && !$el.is(SELECTOR_UNRESIZABLE)) {
+			if(!$el.is(SELECTOR_UNRESIZABLE)) {
 				let width = this.options.store.get(
 					this.generateColumnId($el)
 				);
@@ -324,7 +508,11 @@ export default class ResizableColumns {
 		if(!this.operation) { return; }
 
 		// Determine the delta change between start and new mouse position, as a percentage of the table width
-		let difference = (this.getPointerX(event) - op.startX) / this.$table.width() * 100;
+		let difference = this.getPointerX(event) - op.startX;
+		if (!this.options.absoluteWidths) {
+			difference = (difference) / this.$table.width() * 100;
+		}
+
 		if(difference === 0) {
 			return;
 		}
@@ -333,13 +521,27 @@ export default class ResizableColumns {
 		let rightColumn = op.$rightColumn[0];
 		let widthLeft, widthRight;
 
-		if(difference > 0) {
-			widthLeft = this.constrainWidth($(leftColumn), op.widths.left + (op.widths.right - op.newWidths.right));
-			widthRight = this.constrainWidth($(rightColumn), op.widths.right - difference);
-		}
-		else if(difference < 0) {
-			widthLeft = this.constrainWidth($(leftColumn), op.widths.left + difference);
-			widthRight = this.constrainWidth($(rightColumn), op.widths.right + (op.widths.left - op.newWidths.left));
+		if (this.options.absoluteWidths) {
+			//TODO Need to investigate this
+			if(difference > 0) {
+				widthLeft = this.constrainWidth($(leftColumn), op.widths.left + (op.widths.right - op.newWidths.right));
+				widthRight = this.constrainWidth($(rightColumn), op.widths.right - difference);
+			}
+			else if(difference < 0) {
+				//_this.setWidth($leftColumn[0], _this.constrainWidth(widths.left + difference));
+				//_this.setWidth($leftColumn[0], newWidths.left = $leftColumn.outerWidth());
+				widthLeft = this.constrainWidth($(leftColumn), op.widths.left + difference);
+				widthRight = this.constrainWidth($(rightColumn), op.widths.right + (op.widths.left - op.newWidths.left));
+			}
+		} else {
+			if(difference > 0) {
+				widthLeft = this.constrainWidth($(leftColumn), op.widths.left + (op.widths.right - op.newWidths.right));
+				widthRight = this.constrainWidth($(rightColumn), op.widths.right - difference);
+			}
+			else if(difference < 0) {
+				widthLeft = this.constrainWidth($(leftColumn), op.widths.left + difference);
+				widthRight = this.constrainWidth($(rightColumn), op.widths.right + (op.widths.left - op.newWidths.left));
+			}
 		}
 
 		if(leftColumn) {
@@ -498,7 +700,29 @@ export default class ResizableColumns {
 	@return {String} Column ID
 	**/
 	generateColumnId($el) {
-		return this.$table.data(DATA_COLUMNS_ID).replace(/\./g, '_') + '-' + $el.data(DATA_COLUMN_ID).replace(/\./g, '_');
+		return this.generateTableId() + '-' + $el.data(DATA_COLUMN_ID).replace(/\./g, '_');
+	}
+
+	/**
+	Calculates a unique ID for a table's (DOMElement) 'absoluteWidths' option
+
+	@private
+	@method generateTableAbsoluteWidthsId
+	@return {String} ID
+	**/
+	generateTableAbsoluteWidthsId() {
+		return this.$table.data(DATA_COLUMNS_ID).replace(/\./g, '_') + '--absolute-widths';
+	}
+
+	/**
+	Calculates a unique ID for a given table DOMElement
+
+	@private
+	@method generateTableId
+	@return {String} Table ID
+	**/
+	generateTableId() {
+		return this.$table.data(DATA_COLUMNS_ID).replace(/\./g, '_');
 	}
 
 	/**
@@ -510,21 +734,21 @@ export default class ResizableColumns {
 	@return {Number} Element's width as a float
 	**/
 	parseWidth(element) {
-		return element ? parseFloat(element.style.width.replace('%', '')) : 0;
+		return element ? parseFloat(element.style.width.replace((this.options.absoluteWidths ? 'px' : '%'), '')) : 0;
 	}
 
 	/**
-	Sets the percentage width of a given DOMElement
+	Sets the width of a given DOMElement
 
 	@private
 	@method setWidth
 	@param element {DOMElement} Element to set width on
-	@param width {Number} Width, as a percentage, to set
+	@param width {Number} Width to set
 	**/
 	setWidth(element, width) {
 		width = width.toFixed(2);
 		width = width > 0 ? width : 0;
-		element.style.width = width + '%';
+		element.style.width = width + (this.options.absoluteWidths ? 'px' : '%');
 	}
 
 	/**
@@ -547,7 +771,7 @@ export default class ResizableColumns {
 		}
 
 		width = Math.max(0, width);
- 		width = Math.min(100, width);
+ 		width = Math.min(this.options.absoluteWidths ? this.$table.width() : 100, width);
 
 		return width;
 	}
@@ -584,7 +808,8 @@ ResizableColumns.defaults = {
 	maxWidth: null,
 	minWidth: 0.01,
 	obeyCssMinWidth: false,
- 	obeyCssMaxWidth: false
+ 	obeyCssMaxWidth: false,
+	absoluteWidths: false
 };
 
 ResizableColumns.count = 0;
