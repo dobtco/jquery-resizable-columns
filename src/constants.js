@@ -17,3 +17,5 @@ export const EVENT_RESIZE_STOP = 'column:resize:stop';
 export const SELECTOR_TH = 'tr:first > th:visible';
 export const SELECTOR_TD = 'tr:first > td:visible';
 export const SELECTOR_UNRESIZABLE = `[data-noresize]`;
+
+export const ATTRIBUTE_UNRESIZABLE = '[data-noresize]';

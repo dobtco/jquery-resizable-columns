@@ -14,7 +14,8 @@ import {
 	EVENT_RESIZE_STOP,
 	SELECTOR_TH,
 	SELECTOR_TD,
-	SELECTOR_UNRESIZABLE
+	SELECTOR_UNRESIZABLE,
+	ATTRIBUTE_UNRESIZABLE
 }
 from './constants';
 
@@ -112,6 +113,10 @@ export default class ResizableColumns {
 	**/
 	assignPercentageWidths() {
 		this.$tableHeaders.each((_, el) => {
+			// do not assign width if the column is not resizable
+			if (el.hasAttribute(ATTRIBUTE_UNRESIZABLE))
+				return;
+
 			let $el = $(el),
 				width = ($el.outerWidth() / this.$table.width()) * 100;
 			
