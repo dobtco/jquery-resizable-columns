@@ -533,8 +533,8 @@ export default class ResizableColumns {
 		this.isDoubleClick = this.lastPointerDown != null && ((new Date() - this.lastPointerDown) < this.options.doubleClickDelay);
 		this.lastPointerDown = new Date();
 		let gripIndex = $currentGrip.index();
-		let $leftColumn = this.$tableHeaders.eq(gripIndex).not(SELECTOR_UNRESIZABLE);
-		let $rightColumn = this.$tableHeaders.eq(gripIndex + 1).not(SELECTOR_UNRESIZABLE);
+		let $leftColumn = this.$tableHeaders.not(SELECTOR_UNRESIZABLE).eq(gripIndex);
+		let $rightColumn = this.$tableHeaders.not(SELECTOR_UNRESIZABLE).eq(gripIndex + 1);
 
 		let leftWidth = this.parseWidth($leftColumn.get(0));
 		let rightWidth = this.parseWidth($rightColumn.get(0));
@@ -594,7 +594,7 @@ export default class ResizableColumns {
 		}
 
 		let gripIndex = $currentGrip.index();
-		let $leftColumn = this.$tableHeaders.eq(gripIndex).not(SELECTOR_UNRESIZABLE);
+		let $leftColumn = this.$tableHeaders.not(SELECTOR_UNRESIZABLE).eq(gripIndex);
 		let left = $leftColumn.get(0);
 		if (!left) {
 			return;
