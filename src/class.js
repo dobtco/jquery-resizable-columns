@@ -335,7 +335,6 @@ export default class ResizableColumns {
 				let leftToAdd = totalWidth + difference - addedWidth;
 				this.setWidth(col, Math.min(newWidth, leftToAdd));
 				addedWidth += newWidth;
-				console.log(j + ' : ' + currentWidth + '->' + newWidth + '||' + leftToAdd);
 				if (addedWidth >= totalWidth)
 					return false;
 			});
@@ -621,7 +620,11 @@ export default class ResizableColumns {
 			});
 		});
 		$fakeEl.remove();
-		if (!this.options.absoluteWidths) {
+		if (this.options.absoluteWidths) {
+			let tableWidth = this.parseWidth(this.$table[0]);
+			let leftWidth = this.parseWidth(left);
+			this.setWidth(this.$table[0], tableWidth + maxWidth - leftWidth);
+		} else {
 			maxWidth = maxWidth / this.$table.width() * 100;
 		}
 		this.setWidth(left, maxWidth);
