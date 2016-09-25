@@ -600,6 +600,13 @@ export default class ResizableColumns {
 			return;
 		}
 		
+		let maxWidth = 0;
+		let indecesToSkyp = [];
+		this.$tableHeaders.each((idx, th) => {
+			if ($(th).is(SELECTOR_UNRESIZABLE)) {
+				indecesToSkyp.push(idx);
+			}
+		});
 		let $fakeEl = $('<span>').css({
 			'position': 'absolute',
 			'visibility': 'hidden',
@@ -607,10 +614,12 @@ export default class ResizableColumns {
 			'top': '-99999px'
 		});
 		$('body').append($fakeEl);
-		let maxWidth = 0;
 		this.$table.find('tr').each((iTr, tr) => {
 			let pos = 0;
 			$(tr).find('td, th').each((iCol, col) => {
+				if (indecesToSkyp.indexOf(iCol) !== -1) {
+					return; // skyp over not resizable columns
+				}
 				let $col = $(col);
 				if (pos === gripIndex) {
 					maxWidth = Math.max(maxWidth, this.getTextWidth($col, $fakeEl))
