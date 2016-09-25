@@ -35,16 +35,19 @@ export default class ResizableColumns {
 		this.options = $.extend({}, ResizableColumns.defaults, options);
 
 		this.$window = $(window);
-		this.$ownerDocument = $($table[0].ownerDocument);
+		this.$ownerDocument = $($table.get(0).ownerDocument);
 		this.$table = $table;
+		this.$tableWrapper = null;
 		this.lastPointerDown = null;
 		this.isDoubleClick = false;
 
 		this.wrapTable();
 		this.refreshHeaders();
 		this.restoreColumnWidths();
+		this.checkTableWidth();
 		this.syncHandleWidths();
 
+		this.bindEvents(this.$window, 'resize', this.checkTableWidth.bind(this));
 		this.bindEvents(this.$window, 'resize', this.syncHandleWidths.bind(this));
 
 		if (this.options.start) {
@@ -69,9 +72,10 @@ export default class ResizableColumns {
 			return;
 		}
 
-		this.$table
-			.wrap(`<div class="${CLASS_TABLE_WRAPPER}"></div>`)
-			.width(this.$table.innerWidth());
+		this.$tableWrapper = this.$table
+									.wrap(`<div class="${CLASS_TABLE_WRAPPER}"></div>`)
+									.width(this.$table.innerWidth())
+									.parent();
 	}
 
 	/**
@@ -171,7 +175,7 @@ export default class ResizableColumns {
 				width = Math.min(maxWidth, width); 
 			}
 
-			this.setWidth($el[0], width);
+			this.setWidth($el.get(0), width);
 		});
 	}
 
@@ -231,7 +235,7 @@ export default class ResizableColumns {
 				width = Math.min(maxWidth, width); 
 			}
 
-			this.setWidth($el[0], width);
+			this.setWidth($el.get(0), width);
 		});
 	}
 
@@ -245,7 +249,7 @@ export default class ResizableColumns {
 	computeMinCssWidths($el) {
 		let el, minWidth;
 		minWidth = null;
-		el = $el[0];
+		el = $el.get(0);
 		if (this.options.obeyCssMinWidth) {
 			if (el.style.minWidth.slice(-2) === 'px') {
 				minWidth = parseFloat(el.style.minWidth);
@@ -272,7 +276,7 @@ export default class ResizableColumns {
 	computeMaxCssWidths($el) {
 		let el, maxWidth;
 		maxWidth = null;
-		el = $el[0];
+		el = $el.get(0);
 		if (this.options.obeyCssMaxWidth) {
 			if (el.style.maxWidth.slice(-2) === 'px') {
 				maxWidth = parseFloat(el.style.maxWidth);
@@ -287,6 +291,55 @@ export default class ResizableColumns {
 			}
 		}
 		return maxWidth;
+	}
+
+	/**
+
+
+	@method checkTableWidth
+	**/
+	checkTableWidth() {
+		if (this.options.absoluteWidths) {
+			this.checkTableWidthAbsolute()
+		}
+	}
+
+	/**
+
+	@private
+	@method checkTableWidthAbsolute
+	**/
+	checkTableWidthAbsolute() {
+		if (!this.options.wrappTable) {
+			return;
+		}
+		
+		let wrappperWidth = this.$tableWrapper.innerWidth();
+		let tableWidth = this.$table.outerWidth(true);
+		let difference = wrappperWidth - tableWidth;
+		if (difference > 0) {
+			let $headers = this.$tableHeaders.not(SELECTOR_UNRESIZABLE);
+			let totalWidth = 0;
+			let addedWidth = 0;
+			let widths = [];
+			$headers.each((i, hd) => {
+				let width = this.parseWidth(hd);
+				widths.push(width);
+				totalWidth += width;
+			});
+
+			this.setWidth(this.$table[0], wrappperWidth);
+			$headers.each((j, col) => {
+				let currentWidth = widths.shift(); 
+				let newWidth = currentWidth + ((currentWidth / totalWidth) * difference);
+				let leftToAdd = totalWidth + difference - addedWidth;
+				this.setWidth(col, Math.min(newWidth, leftToAdd));
+				addedWidth += newWidth;
+				console.log(j + ' : ' + currentWidth + '->' + newWidth + '||' + leftToAdd);
+				if (addedWidth >= totalWidth)
+					return false;
+			});
+		}
 	}
 
 	/**
@@ -320,7 +373,7 @@ export default class ResizableColumns {
 				this.$table.height() :
 				this.$table.find('thead').height();
 
-			let $th = this.$tableHeaders.filter(`:not(${SELECTOR_UNRESIZABLE})`).eq(_);
+			let $th = this.$tableHeaders.not(SELECTOR_UNRESIZABLE).eq(_);
 
 			let left = $th.outerWidth()
 			left -= ResizableColumns.parsePixelString($el.css('paddingLeft'));
@@ -350,7 +403,7 @@ export default class ResizableColumns {
 				this.$table.height() :
 				this.$table.find('thead').height();
 
-			let $th = this.$tableHeaders.filter(`:not(${SELECTOR_UNRESIZABLE})`).eq(_);
+			let $th = this.$tableHeaders.not(SELECTOR_UNRESIZABLE).eq(_);
 
 			let left = $th.outerWidth() + ($th.offset().left - this.$handleContainer.offset().left);
 
@@ -484,8 +537,9 @@ export default class ResizableColumns {
 		let $leftColumn = this.$tableHeaders.eq(gripIndex).not(SELECTOR_UNRESIZABLE);
 		let $rightColumn = this.$tableHeaders.eq(gripIndex + 1).not(SELECTOR_UNRESIZABLE);
 
-		let leftWidth = this.parseWidth($leftColumn[0]);
-		let rightWidth = this.parseWidth($rightColumn[0]);
+		let leftWidth = this.parseWidth($leftColumn.get(0));
+		let rightWidth = this.parseWidth($rightColumn.get(0));
+		let tableWidth = this.parseWidth(this.$table.get(0));
 
 		this.operation = {
 			$leftColumn, $rightColumn, $currentGrip,
@@ -494,11 +548,13 @@ export default class ResizableColumns {
 
 			widths: {
 				left: leftWidth,
-				right: rightWidth
+				right: rightWidth,
+				table: tableWidth
 			},
 			newWidths: {
 				left: leftWidth,
-				right: rightWidth
+				right: rightWidth,
+				table: tableWidth
 			}
 		};
 
@@ -555,13 +611,13 @@ export default class ResizableColumns {
 		let maxWidth = 0;
 		this.$table.find('tr').each((iTr, tr) => {
 			let pos = 0;
-			$(tr).find('td, th').each((iTd, td) => {
-				let $td = $(td);
+			$(tr).find('td, th').each((iCol, col) => {
+				let $col = $(col);
 				if (pos === gripIndex) {
-					maxWidth = Math.max(maxWidth, this.getTextWidth($td, $fakeEl))
+					maxWidth = Math.max(maxWidth, this.getTextWidth($col, $fakeEl))
 					return false;
 				}
-				pos += ($td.prop('colspan') || 1);						
+				pos += ($col.prop('colspan') || 1);						
 			});
 		});
 		$fakeEl.remove();
@@ -591,30 +647,29 @@ export default class ResizableColumns {
 			return;
 		}
 
-		let leftColumn = op.$leftColumn[0];
-		let rightColumn = op.$rightColumn[0];
-		let widthLeft, widthRight;
+		let leftColumn = op.$leftColumn.get(0);
+		let rightColumn = op.$rightColumn.get(0);
+		let table = this.$table.get(0);
+		let widthLeft, widthRight, tableWidth;
 
 		if (this.options.absoluteWidths) {
-			//TODO Need to investigate this
-			if(difference > 0) {
-				widthLeft = this.constrainWidth($(leftColumn), op.widths.left + (op.widths.right - op.newWidths.right));
-				widthRight = this.constrainWidth($(rightColumn), op.widths.right - difference);
-			}
-			else if(difference < 0) {
-				//_this.setWidth($leftColumn[0], _this.constrainWidth(widths.left + difference));
-				//_this.setWidth($leftColumn[0], newWidths.left = $leftColumn.outerWidth());
-				widthLeft = this.constrainWidth($(leftColumn), op.widths.left + difference);
-				widthRight = this.constrainWidth($(rightColumn), op.widths.right + (op.widths.left - op.newWidths.left));
-			}
+			tableWidth = op.widths.table + difference;
+			widthLeft = this.constrainWidth(op.$leftColumn, op.widths.left + difference);
+			widthRight = op.widths.right; //Keep right column unchanged when increasing the table size
 		} else {
-			if(difference > 0) {
-				widthLeft = this.constrainWidth($(leftColumn), op.widths.left + (op.widths.right - op.newWidths.right));
-				widthRight = this.constrainWidth($(rightColumn), op.widths.right - difference);
+			tableWidth = 100;
+			if(difference < 0) {
+				widthLeft = this.constrainWidth(op.$leftColumn, op.widths.left + difference);
+				widthRight = this.constrainWidth(op.$rightColumn, op.widths.right + (op.widths.left - op.newWidths.left));
+			} else if(difference > 0) {
+				widthLeft = this.constrainWidth(op.$leftColumn, op.widths.left + (op.widths.right - op.newWidths.right));
+				widthRight = this.constrainWidth(op.$rightColumn, op.widths.right - difference);
 			}
-			else if(difference < 0) {
-				widthLeft = this.constrainWidth($(leftColumn), op.widths.left + difference);
-				widthRight = this.constrainWidth($(rightColumn), op.widths.right + (op.widths.left - op.newWidths.left));
+		}
+
+		if (table) {
+			if (this.options.absoluteWidths) {
+				this.setWidth(table, tableWidth);
 			}
 		}
 
@@ -627,6 +682,7 @@ export default class ResizableColumns {
 
 		op.newWidths.left = widthLeft;
 		op.newWidths.right = widthRight;
+		op.newWidths.table = tableWidth;
 
 		return this.triggerEvent(EVENT_RESIZE, [
 			op.$leftColumn, op.$rightColumn,
@@ -660,6 +716,7 @@ export default class ResizableColumns {
 			.add(op.$currentGrip)
 			.removeClass(CLASS_COLUMN_RESIZING);
 
+		this.checkTableWidth();
 		this.syncHandleWidths();
 		this.saveColumnWidths();
 
