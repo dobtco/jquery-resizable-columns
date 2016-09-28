@@ -762,7 +762,12 @@ export default class ResizableColumns {
 		$table.removeData(DATA_API);
 
 		this.$handleContainer.remove();
+		if (this.$tableWrapper != null) {
+			this.$table.insertBefore(this.$tableWrapper);
+			this.$tableWrapper.remove();
+		}
 		this.$handleContainer = null;
+		this.$tableWrapper = null;
 		this.$tableHeaders = null;
 		this.$table = null;
 
