@@ -508,6 +508,21 @@ export default class ResizableColumns {
 	}
 
 	/**
+
+
+	@method refreshWrapperStyle
+	**/
+	refreshWrapperStyle() {
+		if (this.$tableWrapper == null)
+			return;
+		
+		const originalStyle = this.$tableWrapper.attr('style'); 
+		this.$tableWrapper
+			.css('overflow-x', 'hidden;')
+			.attr('style', originalStyle);
+	}
+
+	/**
 	Pointer/mouse down handler
 
 	@method onPointerDown
@@ -730,6 +745,7 @@ export default class ResizableColumns {
 
 		this.checkTableWidth();
 		this.syncHandleWidths();
+		this.refreshWrapperStyle();
 		this.saveColumnWidths();
 
 		this.operation = null;
