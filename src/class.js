@@ -68,7 +68,7 @@ export default class ResizableColumns {
 	@method refreshHeaders
 	**/
 	wrapTable() {
-		if(!this.options.wrappTable) {
+		if(!this.shouldWrap()) {
 			return;
 		}
 
@@ -310,7 +310,7 @@ export default class ResizableColumns {
 	@method checkTableWidthAbsolute
 	**/
 	checkTableWidthAbsolute() {
-		if (!this.options.wrappTable) {
+		if (!this.shouldWrap()) {
 			return;
 		}
 		
@@ -970,18 +970,19 @@ export default class ResizableColumns {
 	@param $fakeEl {jQuery} jQuery-wrapped DOMElement that will be used to measure the width
 	@return {Number} Text width
 	**/
-	getTextWidth($el, $fakeEl) {		
-		return $fakeEl
-			.css({
-				'fontFamily': $el.css('fontFamily'),
-				'fontSize': $el.css('fontSize'),
-				'fontWeight': $el.css('fontWeight'),
-				'paddingLeft': $el.css('paddingLeft'),
-				'paddingRight': $el.css('paddingRight'),
-				'border': $el.css('border')
-			})
-			.text($el.text())
-			.outerWidth(true);
+	getTextWidth($el, $fakeEl) {
+		return $fakeEl.css({
+			'fontFamily': $el.css('fontFamily'),
+			'fontSize': $el.css('fontSize'),
+			'fontWeight': $el.css('fontWeight'),
+			'padding': $el.css('padding'),
+			'border': $el.css('border')})
+		.html($el.text().replace(/\s/g, '&nbsp;'))
+		.outerWidth(true);
+	}
+
+	shouldWrap() {
+		return this.options.wrappTable || this.options.absoluteWidths;
 	}
 }
 
