@@ -248,8 +248,17 @@ var ResizableColumns = (function () {
 			}
 
 			var gripIndex = $currentGrip.index();
-			var $leftColumn = this.$tableHeaders.eq(gripIndex).not(_constants.SELECTOR_UNRESIZABLE);
-			var $rightColumn = this.$tableHeaders.eq(gripIndex + 1).not(_constants.SELECTOR_UNRESIZABLE);
+			var i = -1;
+			for (var leftColumnIndex = 0; leftColumnIndex < this.$tableHeaders.length - 1; leftColumnIndex++) {
+				if (!this.$tableHeaders.eq(leftColumnIndex).is(_constants.SELECTOR_UNRESIZABLE) && !this.$tableHeaders.eq(leftColumnIndex + 1).is(_constants.SELECTOR_UNRESIZABLE)) {
+					i++;
+				}
+				if (gripIndex === i) {
+					var $leftColumn = this.$tableHeaders.eq(leftColumnIndex);
+					var $rightColumn = this.$tableHeaders.eq(leftColumnIndex + 1);
+					break;
+				}
+			}
 
 			var leftWidth = this.parseWidth($leftColumn[0]);
 			var rightWidth = this.parseWidth($rightColumn[0]);
