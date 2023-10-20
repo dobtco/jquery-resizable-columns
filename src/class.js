@@ -34,6 +34,7 @@ export default class ResizableColumns {
 		this.$ownerDocument = $($table[0].ownerDocument);
 		this.$table = $table;
 
+		this.setTableProperties();
 		this.refreshHeaders();
 		this.restoreColumnWidths();
 		this.syncHandleWidths();
@@ -49,6 +50,18 @@ export default class ResizableColumns {
 		if (this.options.stop) {
 			this.bindEvents(this.$table, EVENT_RESIZE_STOP, this.options.stop);
 		}
+	}
+
+	/**
+	 * Set table properties when initialize
+	 * 
+	 * @method setTableProperties
+	 */
+	setTableProperties() {
+		console.log(this.$table);
+		this.$table.css('table-layout', 'fixed');
+		this.$table.find('thead tr th').css('vertical-align', 'top');
+		this.$table.find('th, td').css('word-break', 'break-all');
 	}
 
 	/**
@@ -90,12 +103,17 @@ export default class ResizableColumns {
 		this.$tableHeaders.each((i, el) => {
 			let $current = this.$tableHeaders.eq(i);
 			let $next = this.$tableHeaders.eq(i + 1);
-
-			if ($next.length === 0 || $current.is(SELECTOR_UNRESIZABLE) || $next.is(SELECTOR_UNRESIZABLE)) {
+			if ($next.length === 0 || $next.is(SELECTOR_UNRESIZABLE)) {
 				return;
 			}
 
-			let $handle = $(`<div class='${CLASS_HANDLE}' />`)
+			/**
+			 * Fixed by gmo.rsdn
+			 * Add attribute column-id to resize-handle element
+			 */
+			const columnId = $(el).attr('data-resizable-column-id')
+
+			let $handle = $(`<div class='${CLASS_HANDLE}' column-id='${columnId}' />`)
 				.data(DATA_TH, $(el))
 				.appendTo(this.$handleContainer);
 		});
@@ -111,7 +129,7 @@ export default class ResizableColumns {
 	assignPercentageWidths() {
 		this.$tableHeaders.each((_, el) => {
 			let $el = $(el);
-			this.setWidth($el[0], $el.outerWidth() / this.$table.width() * 100);
+			$el.width(Math.max($el.outerWidth(), this.options.minWidth))
 		});
 	}
 
@@ -152,7 +170,7 @@ export default class ResizableColumns {
 			if (this.options.store && !$el.is(SELECTOR_UNRESIZABLE)) {
 				this.options.store.set(
 					this.generateColumnId($el),
-					this.parseWidth(el)
+					$el.width(),
 				);
 			}
 		});
@@ -173,7 +191,7 @@ export default class ResizableColumns {
 				);
 
 				if(width != null) {
-					this.setWidth(el, width);
+					$el.width(Math.max(width, this.options.minWidth));
 				}
 			}
 		});
@@ -201,18 +219,25 @@ export default class ResizableColumns {
 		if($currentGrip.is(SELECTOR_UNRESIZABLE)) {
 			return;
 		}
-
-		let gripIndex = $currentGrip.index();
-		let $leftColumn = this.$tableHeaders.eq(gripIndex).not(SELECTOR_UNRESIZABLE);
-		let $rightColumn = this.$tableHeaders.eq(gripIndex + 1).not(SELECTOR_UNRESIZABLE);
-
-		let leftWidth = this.parseWidth($leftColumn[0]);
-		let rightWidth = this.parseWidth($rightColumn[0]);
+		/**
+		 * Fixed by gmo.rsdn
+		 * changed logic find element leftColumn and rightColumn with column-id
+		 */
+		const columnId = $(event.currentTarget).attr('column-id')
+		const selector = '[data-resizable-column-id="' + columnId + '"]'
+		let $leftColumn = this.$table.find(selector)
+		let $rightColumn = this.$table.find(selector).next()
+		// let leftWidth = this.parseWidth($leftColumn[0]);
+		// let rightWidth = this.parseWidth($rightColumn[0]);
+		let leftWidth = $leftColumn.width()
+		let rightWidth = $rightColumn.width()
 
 		this.operation = {
 			$leftColumn, $rightColumn, $currentGrip,
 
 			startX: this.getPointerX(event),
+
+			pointerDownEvent: event,
 
 			widths: {
 				left: leftWidth,
@@ -255,30 +280,51 @@ export default class ResizableColumns {
 		let op = this.operation;
 		if(!this.operation) { return; }
 
+
 		// Determine the delta change between start and new mouse position, as a percentage of the table width
-		let difference = (this.getPointerX(event) - op.startX) / this.$table.width() * 100;
+		// let difference = (this.getPointerX(event) - op.startX) / this.$table.width() * 100;
+		let difference = event.pageX - op.pointerDownEvent.pageX
 		if(difference === 0) {
 			return;
 		}
 
+
 		let leftColumn = op.$leftColumn[0];
 		let rightColumn = op.$rightColumn[0];
+		const totalWidth = op.$leftColumn.width() + op.$rightColumn.width();
 		let widthLeft, widthRight;
-
 		if(difference > 0) {
-			widthLeft = this.constrainWidth(op.widths.left + (op.widths.right - op.newWidths.right));
-			widthRight = this.constrainWidth(op.widths.right - difference);
+			// widthLeft = this.constrainWidth(op.widths.left + (op.widths.right - op.newWidths.right));
+			// widthRight = this.constrainWidth(op.widths.right - difference);
+			widthRight = op.widths.right - difference;
+			widthLeft = totalWidth - widthRight;
 		}
 		else if(difference < 0) {
-			widthLeft = this.constrainWidth(op.widths.left + difference);
-			widthRight = this.constrainWidth(op.widths.right + (op.widths.left - op.newWidths.left));
+			// widthLeft = this.constrainWidth(op.widths.left + difference);
+			// widthRight = this.constrainWidth(op.widths.right + (op.widths.left - op.newWidths.left));
+			widthLeft = op.widths.left + difference;
+			widthRight = totalWidth - widthLeft;
+		}
+		widthLeft = Math.max(this.options.minWidth, widthLeft);
+		widthRight = Math.max(this.options.minWidth, widthRight);
+
+		const maxWidth = totalWidth - this.options.minWidth;
+
+		if (widthLeft > maxWidth) {
+			widthLeft = maxWidth;
+		}
+
+		if (widthRight > maxWidth) {
+			widthRight = maxWidth;
 		}
 
 		if(leftColumn) {
-			this.setWidth(leftColumn, widthLeft);
+			// this.setWidth(leftColumn, widthLeft);
+			op.$leftColumn.width(widthLeft);
 		}
 		if(rightColumn) {
-			this.setWidth(rightColumn, widthRight);
+			// this.setWidth(rightColumn, widthRight);
+			op.$rightColumn.width(widthRight);
 		}
 
 		op.newWidths.left = widthLeft;
@@ -455,7 +501,7 @@ export default class ResizableColumns {
 	@param width {Number} Width, as a percentage, to set
 	**/
 	setWidth(element, width) {
-		width = width.toFixed(2);
+		// width = width.toFixed(2);
 		width = width > 0 ? width : 0;
 		element.style.width = width + '%';
 	}

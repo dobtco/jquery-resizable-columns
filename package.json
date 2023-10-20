@@ -13,6 +13,9 @@
   "bugs": {
     "url": "http://github.com/dobtco/jquery-resizable-columns/issues"
   },
+  "resolutions": {
+    "graceful-fs": "^4.2.11"
+  },
   "keywords": [
     "jquery",
     "resizable-columns-table",
@@ -41,6 +44,6 @@
   },
   "scripts": {
     "build": "npm install && gulp",
-    "start": "gulp"
+    "start": "gulp watch"
   }
 }
